@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { PlaceSearch } from "@/components/place-search";
 import { NotesPanel } from "@/components/notes-panel";
 import { ComposeNote } from "@/components/compose-note";
@@ -67,8 +68,20 @@ export default function MapPage() {
       {/* Top bar */}
       <div className="map-topbar">
         <Link href="/" className="map-wordmark" aria-label="Go to home">noted</Link>
-        <div className="map-search">
-          <PlaceSearch onSelect={setFlyToPlace} />
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="map-search">
+            <PlaceSearch onSelect={setFlyToPlace} />
+          </div>
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button style={{ background: "none", border: "1px solid #222", borderRadius: "9999px", padding: "7px 16px", color: "#999", fontSize: 12, fontWeight: 600, cursor: "pointer", pointerEvents: "auto", fontFamily: "inherit" }}>Sign in</button>
+            </SignInButton>
+          </Show>
+          <Show when="signed-in">
+            <div style={{ pointerEvents: "auto" }}>
+              <UserButton />
+            </div>
+          </Show>
         </div>
       </div>
 

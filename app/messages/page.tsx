@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import {
   getOrCreateThread,
   getThreads,
@@ -21,7 +21,7 @@ export default function MessagesPage() {
 }
 
 function MessagesContent() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const noteId = searchParams.get("note");
 
@@ -64,12 +64,14 @@ function MessagesContent() {
     setMessages(msgs);
   }
 
-  if (authLoading) return <div className="msg-page"><div className="msg-empty">Loading…</div></div>;
+  if (!isLoaded) return <div className="msg-page"><div className="msg-empty">Loading…</div></div>;
   if (!user) {
     return (
       <div className="msg-page">
         <div className="msg-empty">
-          <Link href="/auth" style={{ color: "#555", textDecoration: "underline" }}>Sign in</Link>&nbsp;to view messages
+          <SignInButton mode="modal">
+            <button style={{ background: "none", border: "none", color: "#555", textDecoration: "underline", cursor: "pointer", font: "inherit" }}>Sign in</button>
+          </SignInButton>&nbsp;to view messages
         </div>
       </div>
     );

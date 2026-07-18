@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 
 export default function Landing() {
   return (
@@ -9,7 +10,14 @@ export default function Landing() {
         <div className="l-nav-links">
           <Link href="#how" className="l-nav-link">How it works</Link>
           <Link href="#about" className="l-nav-link">About</Link>
-          <Link href="/auth" className="l-nav-link">Sign in</Link>
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button className="l-nav-link" style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>Sign in</button>
+            </SignInButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton />
+          </Show>
         </div>
       </nav>
 
@@ -33,7 +41,11 @@ export default function Landing() {
               <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <Link href="/auth" className="l-cta l-cta--ghost">Create account</Link>
+          <Show when="signed-out">
+            <SignUpButton mode="modal">
+              <button className="l-cta l-cta--ghost">Create account</button>
+            </SignUpButton>
+          </Show>
         </div>
       </section>
 
@@ -129,7 +141,6 @@ export default function Landing() {
         <span className="l-footer-brand">noted</span>
         <div className="l-footer-links">
           <Link href="/map" className="l-footer-link">Map</Link>
-          <Link href="/auth" className="l-footer-link">Sign in</Link>
           <a href="https://github.com/davidfrancisco" target="_blank" rel="noopener noreferrer" className="l-footer-link">GitHub</a>
         </div>
         <span className="l-footer-copy">&copy; 2026 David Francisco</span>

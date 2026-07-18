@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import { getComments, createComment } from "@/lib/actions-comments";
 import type { Comment } from "@/lib/actions-comments";
 import { formatRelativeTime } from "@/lib/geo";
@@ -12,7 +11,7 @@ interface Props {
 }
 
 export function CommentsSection({ noteId }: Props) {
-  const { user } = useAuth();
+  const { user, isLoaded } = useUser();
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -48,7 +47,7 @@ export function CommentsSection({ noteId }: Props) {
         </div>
       )}
 
-      {user ? (
+      {isLoaded && user ? (
         <div className="comment-form">
           <input
             className="comment-input"
@@ -63,7 +62,9 @@ export function CommentsSection({ noteId }: Props) {
         </div>
       ) : (
         <p className="comment-auth-nudge">
-          <Link href="/auth">Sign in</Link> to comment
+          <SignInButton mode="modal">
+            <button style={{ background: "none", border: "none", color: "#555", textDecoration: "underline", cursor: "pointer", font: "inherit", fontSize: 12 }}>Sign in</button>
+          </SignInButton>{" "}to comment
         </p>
       )}
     </div>

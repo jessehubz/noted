@@ -1,9 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
+import { createHash } from "crypto";
 import { supabase } from "@/lib/supabase/client";
 import type { Note } from "@/lib/types";
 import { createNoteSchema } from "@/lib/validation";
 import { moderateContent, fuzzyLocation } from "@/lib/moderation";
+import { noteRateLimit, checkRateLimit } from "@/lib/rate-limit";
 
 export interface CreateNoteResult {
   success: boolean;
@@ -12,6 +15,16 @@ export interface CreateNoteResult {
 }
 
 export async function createNote(input: unknown): Promise<CreateNoteResult> {
+  // Rate limiting based on IP
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ipHash = createHash("sha256").update(`${ip}:noted-notes-v1`).digest("hex").slice(0, 32);
+
+  const rateCheck = await checkRateLimit(noteRateLimit, ip);
+  if (!rateCheck.allowed) {
+    return { success: false, error: "You're posting too fast. Wait a minute and try again." };
+  }
+
   const parsed = createNoteSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid note" };
@@ -42,6 +55,7 @@ export async function createNote(input: unknown): Promise<CreateNoteResult> {
       longitude: finalLng,
       spotify_track_id: spotify_track_id ?? null,
       display_name: display_name ?? null,
+      ip_hash: ipHash,
     })
     .select()
     .single();

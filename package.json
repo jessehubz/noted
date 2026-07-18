@@ -9,8 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.5.20",
+    "@clerk/themes": "^2.4.57",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.110.7",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "maplibre-gl": "^5.24.0",
     "motion": "^12.42.2",
     "next": "16.2.10",

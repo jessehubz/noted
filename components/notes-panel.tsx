@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
+import { useUser, SignInButton } from "@clerk/nextjs";
 import type { Note } from "@/lib/types";
 import { NoteCard } from "@/components/note-card";
 import { CommentsSection } from "@/components/comments-section";
-import { useAuth } from "@/lib/auth-context";
 
 interface NotesPanelProps {
   notes: Note[] | null;
@@ -15,7 +15,7 @@ interface NotesPanelProps {
 
 export function NotesPanel({ notes, onClose }: NotesPanelProps) {
   const [tab, setTab] = useState<"notes" | "comments">("notes");
-  const { user } = useAuth();
+  const { user } = useUser();
 
   // Reset tab when panel opens with new notes.
   const firstNoteId = notes?.[0]?.id;
@@ -77,7 +77,9 @@ export function NotesPanel({ notes, onClose }: NotesPanelProps) {
                         </Link>
                       ) : (
                         <p className="comment-auth-nudge" style={{ textAlign: "left", padding: "4px 0" }}>
-                          <Link href="/auth">Sign in</Link> to message
+                          <SignInButton mode="modal">
+                            <button style={{ background: "none", border: "none", color: "#555", textDecoration: "underline", cursor: "pointer", font: "inherit", fontSize: 12 }}>Sign in</button>
+                          </SignInButton>{" "}to message
                         </p>
                       )}
                     </div>
