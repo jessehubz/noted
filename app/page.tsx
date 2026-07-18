@@ -43,7 +43,7 @@ export default function Landing() {
           <Link href="#how" className="l-nav-link">How it works</Link>
           <Link href="#about" className="l-nav-link">About</Link>
           <Show when="signed-out">
-            <SignInButton mode="modal" forceRedirectUrl="/map">
+            <SignInButton mode="modal" forceRedirectUrl="/api/auth-redirect">
               <button className="l-nav-link" style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>Sign in</button>
             </SignInButton>
           </Show>
@@ -72,7 +72,7 @@ export default function Landing() {
             </svg>
           </Link>
           <Show when="signed-out">
-            <SignUpButton mode="modal" forceRedirectUrl="/map">
+            <SignUpButton mode="modal" forceRedirectUrl="/api/auth-redirect">
               <button className="l-cta l-cta--ghost">Create account</button>
             </SignUpButton>
           </Show>
