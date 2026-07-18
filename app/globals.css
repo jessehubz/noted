@@ -2178,3 +2178,64 @@ button {
 .admin-toggle-label input {
   accent-color: #fff;
 }
+
+/* ── Admin grid layouts ───────────────────────────────── */
+.admin-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .admin-grid-2 {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+/* ── Admin quick actions ──────────────────────────────── */
+.admin-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.admin-action-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: 8px;
+  transition: background 0.12s;
+  cursor: pointer;
+}
+
+.admin-action-item:hover {
+  background: #111;
+}
+
+.admin-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #111;
+  border: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  flex-shrink: 0;
+}
+
+.admin-action-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.admin-action-desc {
+  display: block;
+  font-size: 11px;
+  color: #555;
+  margin-top: 2px;
+}
