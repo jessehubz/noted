@@ -15,9 +15,12 @@ const BLOCKED_PATTERNS = [
   /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/, // phone number
   // Child safety
   /\b(cp|child\s+porn|underage\s+nude)\b/i,
+  // Spam / links (block all URLs)
+  /https?:\/\/\S+/i,
+  /www\.\S+/i,
+  /\b\S+\.(com|net|org|io|co|xyz|tk|ml|ga|cf|gq|info|biz)\b/i,
   // Spam patterns
   /\b(buy\s+now|click\s+here|free\s+gift|earn\s+\$\d+)\b/i,
-  /(https?:\/\/\S+){3,}/, // 3+ URLs = likely spam
 ];
 
 export interface ModerationResult {

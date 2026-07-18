@@ -9,7 +9,6 @@ import { NotesPanel } from "@/components/notes-panel";
 import { ComposeNote } from "@/components/compose-note";
 import { FeaturedNote } from "@/components/featured-note";
 import { TimeSlider } from "@/components/time-slider";
-import { SpotifyBar } from "@/components/spotify-bar";
 import type { Note, PlaceResult } from "@/lib/types";
 
 const NoteMap = dynamic(
@@ -27,7 +26,6 @@ export default function MapPage() {
     longitude: number;
   } | null>(null);
   const [since, setSince] = useState<string | null>(null);
-  const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -45,9 +43,6 @@ export default function MapPage() {
 
   function handleSelectNotes(notes: Note[]) {
     setSelectedNotes(notes);
-    // If the first note has a Spotify track, show the player.
-    const firstTrack = notes.find((n) => n.spotify_track_id)?.spotify_track_id ?? null;
-    setActiveTrackId(firstTrack);
   }
 
   function handleFeaturedSelect(note: Note) {
@@ -101,16 +96,13 @@ export default function MapPage() {
         </button>
       </div>
 
-      <NotesPanel notes={selectedNotes} onClose={() => { setSelectedNotes(null); setActiveTrackId(null); }} />
+      <NotesPanel notes={selectedNotes} onClose={() => setSelectedNotes(null)} />
 
       <ComposeNote
         open={composeOpen}
         onClose={() => setComposeOpen(false)}
         onPosted={() => setRefreshToken((t) => t + 1)}
       />
-
-      {/* Spotify mini player */}
-      <SpotifyBar trackId={activeTrackId} onClose={() => setActiveTrackId(null)} />
     </div>
   );
 }

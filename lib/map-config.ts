@@ -11,4 +11,4 @@ export const DEFAULT_ZOOM = 2;
 
 /** Notes within this many meters (roughly) get grouped into one marker. */
 export const CLUSTER_RADIUS_PX = 50;
-export const CLUSTER_MAX_ZOOM = 15;
+export const CLUSTER_MAX_ZOOM = 18;

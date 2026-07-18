@@ -75,18 +75,29 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
           e.stopPropagation();
           const leaves = index.getLeaves(feature.properties.cluster_id, Infinity);
           onSelectNotes(leaves.map((l) => l.properties));
-        }, { once: true });
+        });
       } else {
         el.setAttribute("aria-label", "note");
         el.innerHTML = pinSVG;
         el.style.cssText = `
           background: none; border: none; padding: 0; cursor: pointer;
-          width: 32px; height: 38px; display: block; touch-action: none;
+          width: 36px; height: 42px; display: block; touch-action: none;
+          min-width: 36px; min-height: 42px;
         `;
+        // When clicking a single pin, also grab any other notes at the exact same coordinate
+        const noteLng = lng;
+        const noteLat = lat;
         el.addEventListener("click", (e) => {
           e.stopPropagation();
-          onSelectNotes([feature.properties]);
-        }, { once: true });
+          const colocated = notesRef.current.filter(
+            (n) => Math.abs(n.longitude - noteLng) < 0.00001 && Math.abs(n.latitude - noteLat) < 0.00001
+          );
+          if (colocated.length > 1) {
+            onSelectNotes(colocated);
+          } else {
+            onSelectNotes([feature.properties]);
+          }
+        });
       }
 
       const marker = new maplibregl.Marker({
@@ -255,7 +266,7 @@ function clusterStyle(size: number): string {
 
 // Minimal square-cornered pin: white fill, black outline, notch at bottom.
 const pinSVG = `
-<svg width="32" height="38" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="36" height="42" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect x="1" y="1" width="30" height="28" rx="5" fill="#fff" stroke="#000" stroke-width="1.5"/>
   <path d="M16 38 L11 29 H21 Z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>
   <circle cx="16" cy="15" r="3.5" fill="#000"/>

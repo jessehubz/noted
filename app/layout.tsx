@@ -34,7 +34,7 @@ const clerkAppearance = {
     colorInputBackground: "#111111",
     colorInputText: "#ffffff",
     colorText: "#ffffff",
-    colorTextSecondary: "#555555",
+    colorTextSecondary: "#aaaaaa",
     colorNeutral: "#ffffff",
     borderRadius: "10px",
     fontFamily: `var(--font-sans, "DM Sans", system-ui, sans-serif)`,
@@ -50,9 +50,10 @@ const clerkAppearance = {
       fontFamily: `var(--font-serif, "DM Serif Display", serif)`,
       fontSize: "28px",
       fontWeight: "400",
+      color: "#fff",
     },
     headerSubtitle: {
-      color: "#444",
+      color: "#999",
     },
     formButtonPrimary: {
       backgroundColor: "#fff",
@@ -73,11 +74,17 @@ const clerkAppearance = {
         borderColor: "#333",
       },
     },
+    formFieldLabel: {
+      color: "#ccc",
+    },
     footerActionLink: {
       color: "#fff",
       "&:hover": {
         color: "#ccc",
       },
+    },
+    footerActionText: {
+      color: "#999",
     },
     socialButtonsBlockButton: {
       backgroundColor: "#111",
@@ -93,11 +100,52 @@ const clerkAppearance = {
       backgroundColor: "#1a1a1a",
     },
     dividerText: {
-      color: "#333",
+      color: "#666",
     },
     userButtonAvatarBox: {
       width: "32px",
       height: "32px",
+    },
+    userButtonPopoverCard: {
+      backgroundColor: "#0a0a0a",
+      border: "1px solid #1a1a1a",
+      borderRadius: "12px",
+    },
+    userButtonPopoverActionButton: {
+      color: "#ccc",
+      "&:hover": {
+        backgroundColor: "#111",
+        color: "#fff",
+      },
+    },
+    userButtonPopoverActionButtonText: {
+      color: "#ccc",
+    },
+    userButtonPopoverFooter: {
+      display: "none",
+    },
+    userProfilePage: {
+      backgroundColor: "#0a0a0a",
+    },
+    profileSectionTitle: {
+      color: "#fff",
+    },
+    profileSectionContent: {
+      color: "#ccc",
+    },
+    badge: {
+      display: "none",
+    },
+    // Hide the "Development mode" banner
+    impersonationFab: {
+      display: "none",
+    },
+    // Hide "Secured by Clerk" branding
+    footer: {
+      display: "none",
+    },
+    internal: {
+      display: "none",
     },
   },
 };

@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useSpotifyPreview } from "@/hooks/useSpotifyPreview";
 import { createNote } from "@/lib/actions";
 import { MAX_NOTE_LENGTH } from "@/lib/validation";
 import type { Note } from "@/lib/types";
-import { debounce } from "@/lib/geo";
 
 interface ComposeNoteProps {
   open: boolean;
@@ -24,18 +22,14 @@ export function ComposeNote({ open, onClose, onPosted }: ComposeNoteProps) {
 
 function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
   const { locate } = useGeolocation();
-  const spotify = useSpotifyPreview();
 
   const [step, setStep] = useState<Step>("locating");
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [content, setContent] = useState("");
   const [name, setName] = useState("");
   const [fuzzy, setFuzzy] = useState(false);
-  const [spotifyUrl, setSpotifyUrl] = useState("");
   const [locateError, setLocateError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  const debouncedResolve = useRef(debounce(spotify.resolve, 500));
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +52,6 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
       content: content.trim(),
       latitude: coords.latitude,
       longitude: coords.longitude,
-      spotify_track_id: spotify.preview?.id ?? null,
       display_name: name.trim() || null,
       fuzzy_location: fuzzy,
     });
@@ -71,7 +64,7 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
 
     setStep("posted");
     onPosted(result.note);
-    setTimeout(onClose, 1000);
+    setTimeout(onClose, 1200);
   }
 
   return (
@@ -123,22 +116,13 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
                 <button className="compose-close" onClick={onClose} disabled={step === "posting"} aria-label="Close">✕</button>
               </div>
 
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value.slice(0, 40))}
-                disabled={step === "posting"}
-                placeholder="Your name (optional)"
-                className="compose-input"
-              />
-
               <textarea
                 autoFocus
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, MAX_NOTE_LENGTH))}
                 disabled={step === "posting"}
-                placeholder="What's on your mind here?"
-                rows={4}
+                placeholder="What's on your mind?"
+                rows={5}
                 className="compose-textarea"
               />
 
@@ -146,6 +130,15 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
                 <span>anonymous · permanent</span>
                 <span className={remaining < 20 ? "compose-meta-warn" : ""}>{remaining}</span>
               </div>
+
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value.slice(0, 40))}
+                disabled={step === "posting"}
+                placeholder="Display name (optional)"
+                className="compose-input"
+              />
 
               {/* Location precision toggle */}
               <label className="compose-toggle">
@@ -160,27 +153,6 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
                   <span className="compose-toggle-hint">Pin will be placed randomly within ~200m</span>
                 </span>
               </label>
-
-              {/* Spotify */}
-              <input
-                type="text"
-                value={spotifyUrl}
-                onChange={(e) => { setSpotifyUrl(e.target.value); debouncedResolve.current(e.target.value); }}
-                disabled={step === "posting"}
-                placeholder="Spotify link (optional)"
-                className="compose-input"
-              />
-              {spotify.loading && <p className="compose-hint">Looking up track…</p>}
-              {spotify.error && <p className="compose-error-text">{spotify.error}</p>}
-              {spotify.preview && (
-                <div className="compose-track">
-                  {spotify.preview.thumbnailUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={spotify.preview.thumbnailUrl} alt="" className="compose-track-img" />
-                  )}
-                  <span className="compose-track-title">{spotify.preview.title}</span>
-                </div>
-              )}
 
               {submitError && <p className="compose-error-text">{submitError}</p>}
 
