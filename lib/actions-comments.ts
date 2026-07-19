@@ -60,5 +60,14 @@ export async function createComment(
     .insert({ note_id: noteId, user_id: userId, content: trimmed });
 
   if (error) return { success: false, error: "Couldn't post comment. Try again." };
+
+  // Notify the note owner that someone replied
+  try {
+    const { notifyNoteOwner } = await import("@/lib/actions-notifications");
+    await notifyNoteOwner(noteId, "Someone");
+  } catch {
+    // Non-critical — don't fail the comment if notifications table doesn't exist yet
+  }
+
   return { success: true };
 }

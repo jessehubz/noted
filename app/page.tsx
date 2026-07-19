@@ -2,198 +2,235 @@
 
 import Link from "next/link";
 import { SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 export default function Landing() {
-  const revealRefs = useRef<HTMLElement[]>([]);
+  const [navScrolled, setNavScrolled] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => setNavScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Reveal on scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
+            entry.target.classList.add("in");
+            observer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.15 }
     );
-
-    revealRefs.current.forEach((el) => { if (el) observer.observe(el); });
+    document.querySelectorAll(".rv").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 
-  function addRevealRef(el: HTMLElement | null) {
-    if (el && !revealRefs.current.includes(el)) {
-      revealRefs.current.push(el);
-    }
-  }
-
   return (
-    <main className="landing">
-      {/* Subtle grid background */}
-      <div className="l-grid-bg" aria-hidden="true" />
-      {/* Radial glow */}
-      <div className="l-radial-glow" aria-hidden="true" />
-
+    <main className="dp">
       {/* NAV */}
-      <nav className="l-nav">
-        <span className="l-wordmark">noted</span>
-        <div className="l-nav-links">
-          <Link href="#how" className="l-nav-link">How it works</Link>
-          <Link href="#about" className="l-nav-link">About</Link>
-          <Show when="signed-out">
-            <SignInButton mode="modal" forceRedirectUrl="/auth-redirect">
-              <button className="l-nav-link" style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>Sign in</button>
-            </SignInButton>
-          </Show>
-          <Show when="signed-in">
-            <UserButton />
-          </Show>
+      <nav className={`dp-nav${navScrolled ? " scrolled" : ""}`}>
+        <div className="dp-nav-in">
+          <Link href="/" className="dp-logo">noted</Link>
+          <div className="dp-nav-links">
+            <Link href="#map" className="dp-nav-link">The map</Link>
+            <Link href="#how" className="dp-nav-link">How it works</Link>
+            <Link href="#share" className="dp-nav-link">Share a note</Link>
+            <span className="dp-nav-sep" />
+            <Show when="signed-out">
+              <SignInButton mode="modal" forceRedirectUrl="/auth-redirect">
+                <button className="dp-nav-link" style={{ background: "none", border: "none", cursor: "pointer", font: "inherit" }}>Sign in</button>
+              </SignInButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
+            <Link href="/map" className="dp-btn dp-btn--nav">Open the map</Link>
+          </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="l-hero">
-        <p className="l-hero-eyebrow l-hero-animate">anonymous · gps-pinned · real-time</p>
-        <h1 className="l-hero-h1 l-hero-animate">
-          <span className="l-hero-h1-light">Every place has</span><br />
-          <span className="l-hero-h1-light">something</span> <span className="l-hero-h1-accent">unsaid.</span>
-        </h1>
-        <p className="l-hero-sub l-hero-animate">
-          Drop anonymous notes at your exact GPS location. Read confessions, jokes, and thoughts
-          left by strangers — pinned to the real places where they happened.
+      <header className="dp-hero">
+        <div className="dp-hero-grid" aria-hidden="true" />
+
+        <h1 className="dp-hero-h1 rv d1">Every place has something <em>unsaid.</em></h1>
+        <p className="dp-hero-sub rv d2">
+          Leave anonymous notes at the exact spot where they happened — and find the ones strangers left behind for you.
         </p>
-        <div className="l-hero-animate l-hero-ctas">
-          <Link href="/map" className="l-cta">
+        <div className="dp-hero-ctas rv d3">
+          <Link href="/map" className="dp-btn">
             Open the map
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-              <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </Link>
-          <Show when="signed-out">
-            <SignUpButton mode="modal" forceRedirectUrl="/auth-redirect">
-              <button className="l-cta l-cta--ghost">Create account</button>
-            </SignUpButton>
-          </Show>
+          <Link href="#how" className="dp-btn dp-btn--ghost">How it works</Link>
+        </div>
+        <div className="dp-scroll-hint" aria-hidden="true">scroll</div>
+      </header>
+
+      {/* MAP SECTION */}
+      <section id="map" className="dp-section">
+        <div className="dp-wrap">
+          <div className="dp-sec-head rv">
+            <span className="dp-sec-num">THE MAP</span>
+            <h2>A quieter kind of <em>map.</em></h2>
+            <p>Notes appear exactly where they were left. Zoom out and they gather into clusters — every circle is a place where someone had something to say.</p>
+          </div>
+
+          <div className="dp-map-stage rv d1">
+            {/* Streets SVG background */}
+            <div className="dp-map-streets" aria-hidden="true">
+              <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+                <g stroke="#171715" strokeWidth="1" fill="none">
+                  <path d="M-20 140 L500 200 L1220 160" />
+                  <path d="M-20 340 L420 380 L900 330 L1220 370" />
+                  <path d="M-20 500 L620 540 L1220 480" />
+                  <path d="M180 -20 L220 620" />
+                  <path d="M430 -20 L390 620" />
+                  <path d="M640 -20 L690 620" strokeWidth="2.4" stroke="#1f1f1d" />
+                  <path d="M900 -20 L860 620" />
+                  <path d="M1090 -20 L1130 620" />
+                </g>
+              </svg>
+            </div>
+
+            {/* Chrome */}
+            <div className="dp-map-chrome" aria-hidden="true">
+              <span className="dp-logo" style={{ fontSize: 21 }}>noted</span>
+              <div className="dp-map-search-pill">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
+                </svg>
+                Search a place…
+              </div>
+            </div>
+
+            {/* Pins */}
+            <div className="dp-pin-layer">
+              <div className="dp-pin fresh" style={{ left: "44%", top: "46%" }}><span className="dp-pin-halo" /><span className="dp-pin-head" /><span className="dp-pin-tail" /></div>
+              <div className="dp-pin" style={{ left: "58%", top: "34%" }}><span className="dp-pin-head" /><span className="dp-pin-tail" /></div>
+              <div className="dp-pin" style={{ left: "30%", top: "62%" }}><span className="dp-pin-head" /><span className="dp-pin-tail" /></div>
+              <div className="dp-pin" style={{ left: "70%", top: "60%" }}><span className="dp-pin-head" /><span className="dp-pin-tail" /></div>
+              <div className="dp-pin" style={{ left: "52%", top: "74%" }}><span className="dp-pin-head" /><span className="dp-pin-tail" /></div>
+            </div>
+
+            {/* Hint */}
+            <div className="dp-map-hint">tap a pin</div>
+          </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="l-how" id="how" ref={addRevealRef}>
-        <p className="l-how-title">How it works</p>
-        <div className="l-how-steps">
-          <div className="l-how-step">
-            <span className="l-how-num">01</span>
-            <p className="l-how-label">Open the map</p>
-            <p className="l-how-desc">Flies to your location automatically. No setup needed.</p>
+      <section id="how" className="dp-section" style={{ paddingTop: 0 }}>
+        <div className="dp-wrap">
+          <div className="dp-sec-head rv">
+            <span className="dp-sec-num">HOW IT WORKS</span>
+            <h2>Say it. Pin it. <em>Leave it.</em></h2>
           </div>
-          <div className="l-how-step">
-            <span className="l-how-num">02</span>
-            <p className="l-how-label">Write a note</p>
-            <p className="l-how-desc">Up to 300 characters. Say what&apos;s on your mind, right where you are.</p>
+
+          <div className="dp-steps rv d1">
+            <div className="dp-step">
+              <span className="dp-step-k">01</span>
+              <h3>Write the unsaid</h3>
+              <p>A confession, a joke, a goodbye, a thank-you. Up to 300 characters. No account, no name — unless you want one.</p>
+            </div>
+            <div className="dp-step">
+              <span className="dp-step-k">02</span>
+              <h3>Pin it where it happened</h3>
+              <p>Your note locks to the spot you&apos;re standing on — or blur it within 200&nbsp;m if the place says too much.</p>
+            </div>
+            <div className="dp-step">
+              <span className="dp-step-k">03</span>
+              <h3>Let strangers find it</h3>
+              <p>Anyone passing through can read it, echo it, or reply. Some notes fade in a day. Some stay forever.</p>
+            </div>
           </div>
-          <div className="l-how-step">
-            <span className="l-how-num">03</span>
-            <p className="l-how-label">Pin it</p>
-            <p className="l-how-desc">Locked to the exact spot forever. No edits, no takebacks.</p>
+
+          {/* Composer mockup */}
+          <div className="dp-composer-wrap">
+            <div className="dp-composer rv" aria-hidden="true">
+              <div className="dp-cm-top">
+                <span className="dp-cm-loc"><i className="dp-cm-dot" />You are here</span>
+                <span className="dp-cm-count">300</span>
+              </div>
+              <div className="dp-cm-area">Say what you couldn&apos;t.<span className="dp-caret" /></div>
+              <div className="dp-cm-row"><span>anonymous</span><span>stays forever</span></div>
+              <button className="dp-btn dp-cm-btn">Pin it here</button>
+            </div>
+            <div className="dp-composer-copy rv d1">
+              <h3>Built for the things you <em>can&apos;t say out loud.</em></h3>
+              <p>noted isn&apos;t a feed. There are no followers, no likes to chase, no profile to perform. Just a place, a moment, and the words you left behind.</p>
+              <ul>
+                <li><span><b>Anonymous by default.</b> Sign a note only if you choose to.</span></li>
+                <li><span><b>Location-honest.</b> Notes can only be dropped where you&apos;re standing.</span></li>
+                <li><span><b>Ephemeral or forever.</b> You decide how long it lives.</span></li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section className="l-features" ref={addRevealRef}>
-        <div className="l-feat">
-          <div className="l-feat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" strokeWidth="1.5" /><circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" /></svg>
+      {/* SHARE / STORY SECTION */}
+      <section id="share" className="dp-share-sec">
+        <div className="dp-wrap">
+          <div className="dp-share-grid">
+            <div className="dp-share-copy">
+              <div className="dp-sec-head rv">
+                <span className="dp-sec-num">SHARE A NOTE</span>
+                <h2>Some notes deserve to <em>travel.</em></h2>
+                <p>Every note exports as a clean, story-sized card — just the words and the mark they left. Made to be posted, and wondered about.</p>
+              </div>
+            </div>
+
+            {/* Story card preview */}
+            <div className="rv d2">
+              <div className="dp-story-card">
+                <div className="dp-story-grid-bg" aria-hidden="true" />
+                <div className="dp-sc-eyebrow">A note left behind</div>
+                <div className="dp-sc-body">
+                  <div className="dp-sc-openq">&ldquo;</div>
+                  <div className="dp-sc-text">I never told you, but the day we met at this corner was the day everything got better.</div>
+                  <div className="dp-sc-author">— anonymous</div>
+                </div>
+                <div className="dp-sc-bottom">
+                  <div className="dp-sc-rule" />
+                  <div className="dp-sc-wordmark">noted</div>
+                  <div className="dp-sc-tag">Every place has something unsaid</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <h2 className="l-feat-title">GPS-locked</h2>
-          <p className="l-feat-body">
-            Your location is captured the instant you write. Can&apos;t be moved or faked.
-          </p>
-        </div>
-        <div className="l-feat">
-          <div className="l-feat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="1.5" /></svg>
-          </div>
-          <h2 className="l-feat-title">Anonymous</h2>
-          <p className="l-feat-body">
-            No username attached. Say what you&apos;re thinking with zero traceability.
-          </p>
-        </div>
-        <div className="l-feat">
-          <div className="l-feat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>
-          </div>
-          <h2 className="l-feat-title">Real-time</h2>
-          <p className="l-feat-body">
-            Notes from others appear live on the map as they&apos;re posted around the world.
-          </p>
         </div>
       </section>
 
-      {/* ABOUT */}
-      <section className="l-about" id="about" ref={addRevealRef}>
-        <p className="l-about-heading">Why I built this</p>
-        <p className="l-about-text">
-          I&apos;ve always believed that places carry stories — the unspoken thoughts on late-night walks,
-          confessions whispered in parks, feelings left behind in coffee shops. Most of those moments
-          vanish without a trace.
-        </p>
-        <p className="l-about-text">
-          noted gives those thoughts a permanent home. A canvas for the unspoken, where your words
-          live exactly where you left them — for anyone passing by to discover.
-        </p>
-        <p className="l-about-name">Jesse David Francisco</p>
-        <p className="l-about-role">Full-stack engineer · Building products that connect people to places</p>
-        <div className="l-about-links">
-          <a href="mailto:jessedavidfrancisco@gmail.com" className="l-about-link">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2" /><path d="M1 4l6 4 6-4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-            Email
-          </a>
-          <a href="https://github.com/jessehubz" target="_blank" rel="noopener noreferrer" className="l-about-link">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1C3.7 1 1 3.7 1 7c0 2.65 1.72 4.9 4.1 5.7.3.05.41-.13.41-.28v-1.02c-1.67.36-2.02-.8-2.02-.8-.27-.7-.67-.88-.67-.88-.55-.37.04-.36.04-.36.6.04.92.62.92.62.54.92 1.41.65 1.76.5.05-.39.21-.65.38-.8-1.33-.15-2.73-.67-2.73-2.97 0-.65.24-1.19.62-1.61-.06-.15-.27-.76.06-1.58 0 0 .5-.16 1.65.61A5.7 5.7 0 017 3.96c.51 0 1.02.07 1.5.2 1.14-.77 1.64-.61 1.64-.61.33.82.12 1.43.06 1.58.39.42.62.96.62 1.61 0 2.31-1.41 2.82-2.75 2.97.22.19.41.56.41 1.13v1.67c0 .16.11.34.42.28A5.99 5.99 0 0013 7c0-3.3-2.7-6-6-6z" fill="currentColor" /></svg>
-            GitHub
-          </a>
-          <a href="https://linkedin.com/in/jessedavidfrancisco" target="_blank" rel="noopener noreferrer" className="l-about-link">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.2" /><path d="M4.5 6v3.5M4.5 4.5v.01M6.5 9.5V7.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
-            LinkedIn
-          </a>
-        </div>
-      </section>
-
-      {/* BOTTOM CTA */}
-      <section className="l-bottom" ref={addRevealRef}>
-        <p className="l-bottom-label">Thoughts are already waiting near you.</p>
-        <Link href="/map" className="l-cta">Open the map</Link>
-      </section>
+      {/* CLOSING CTA */}
+      <div className="dp-closing">
+        <span className="dp-eyebrow rv">Your turn</span>
+        <h2 className="rv d1">Every place has something unsaid.<br /><em>Now it has somewhere to go.</em></h2>
+        <Link href="/map" className="dp-btn rv d2">
+          Leave your first note
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </Link>
+      </div>
 
       {/* FOOTER */}
-      <footer className="l-footer">
-        <div className="l-footer-top">
-          <div className="l-footer-col">
-            <span className="l-footer-brand">noted</span>
-            <p className="l-footer-tagline">Anonymous thoughts, pinned to the world.</p>
-          </div>
-          <div className="l-footer-col">
-            <span className="l-footer-col-title">Product</span>
-            <Link href="/map" className="l-footer-link">Open Map</Link>
-            <Link href="#how" className="l-footer-link">How it works</Link>
-          </div>
-          <div className="l-footer-col">
-            <span className="l-footer-col-title">Legal</span>
-            <Link href="/terms" className="l-footer-link">Terms of Service</Link>
-            <Link href="/privacy" className="l-footer-link">Privacy Policy</Link>
-          </div>
-          <div className="l-footer-col">
-            <span className="l-footer-col-title">Connect</span>
-            <a href="https://github.com/jessehubz/noted" target="_blank" rel="noopener noreferrer" className="l-footer-link">GitHub</a>
-            <a href="mailto:jessedavidfrancisco@gmail.com" className="l-footer-link">Contact</a>
-          </div>
+      <footer className="dp-footer">
+        <span className="dp-logo">noted</span>
+        <div className="dp-footer-links">
+          <Link href="#how">How it works</Link>
+          <Link href="/terms">Terms</Link>
+          <Link href="/privacy">Privacy</Link>
+          <a href="https://github.com/jessehubz/noted" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
-        <div className="l-footer-bottom">
-          <span className="l-footer-copy">&copy; 2026 Jesse David Francisco. All rights reserved.</span>
-        </div>
+        <span className="dp-footer-tag">Every place has something unsaid</span>
       </footer>
     </main>
   );

@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>noted — every place has something unsaid</title>
+    <meta name="description"
+        content="Drop anonymous notes at your exact location. Read confessions, jokes, and quiet thoughts left by strangers — pinned to the real places where they happened.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Space+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ============================================================
+   noted — v2
+   quiet ink on night. room to breathe.
+   ============================================================ */
+        :root {
+            --bg: #060606;
+            --panel: #0B0B0A;
+            --raise: #111110;
+            --ink: #F5F3EE;
+            --dim: #A3A19A;
+            --ghost: #5C5A55;
+            --line: rgba(245, 243, 238, .14);
+            --hairline: rgba(245, 243, 238, .07);
+            --serif: "Instrument Serif", Georgia, serif;
+            --sans: "Inter", -apple-system, system-ui, sans-serif;
+            --mono: "Space Mono", ui-monospace, monospace;
+            --ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--sans);
+            font-size: 17px;
+            line-height: 1.75;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: var(--ink);
+            color: var(--bg)
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: 0;
+            background: none;
+            color: inherit
+        }
+
+        svg {
+            display: block
+        }
+
+        .wrap {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 32px
+        }
+
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: .34em;
+            text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        .eyebrow .dot {
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--ink);
+            margin-right: 12px;
+            vertical-align: 2px;
+            animation: blink 2.6s infinite
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .2
+            }
+        }
+
+        /* reveal */
+        .rv {
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity 1s var(--ease), transform 1s var(--ease)
+        }
+
+        .rv.in {
+            opacity: 1;
+            transform: none
+        }
+
+        .rv.d1 {
+            transition-delay: .1s
+        }
+
+        .rv.d2 {
+            transition-delay: .2s
+        }
+
+        .rv.d3 {
+            transition-delay: .3s
+        }
+
+        /* buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--ink);
+            color: var(--bg);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .01em;
+            padding: 13px 26px;
+            border-radius: 100px;
+            transition: transform .35s var(--ease), box-shadow .35s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(245, 243, 238, .14)
+        }
+
+        .btn:active {
+            transform: translateY(0)
+        }
+
+        .btn svg {
+            transition: transform .35s var(--ease)
+        }
+
+        .btn:hover svg {
+            transform: translateX(3px)
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            box-shadow: none
+        }
+
+        .btn.ghost:hover {
+            border-color: rgba(245, 243, 238, .5);
+            box-shadow: none
+        }
+
+        /* ============================================================
+   NAV — quiet bar, links underline on hover
+   ============================================================ */
+        nav {
+            position: fixed;
+            inset: 0 0 auto 0;
+            z-index: 50;
+            transition: background .45s, border-color .45s;
+            border-bottom: 1px solid transparent;
+        }
+
+        nav.scrolled {
+            background: rgba(6, 6, 6, .78);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom-color: var(--hairline);
+        }
+
+        .nav-in {
+            max-width: 1240px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 32px;
+            transition: padding .45s;
+        }
+
+        nav.scrolled .nav-in {
+            padding: 14px 32px
+        }
+
+        .logo {
+            font-family: var(--serif);
+            font-size: 28px;
+            line-height: 1;
+            letter-spacing: 0
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .nav-links a.link {
+            position: relative;
+            font-size: 13.5px;
+            color: var(--dim);
+            padding: 8px 14px;
+            transition: color .3s;
+        }
+
+        .nav-links a.link::after {
+            content: "";
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            bottom: 4px;
+            height: 1px;
+            background: var(--ink);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform .4s var(--ease);
+        }
+
+        .nav-links a.link:hover {
+            color: var(--ink)
+        }
+
+        .nav-links a.link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left
+        }
+
+        .nav-sep {
+            width: 1px;
+            height: 18px;
+            background: var(--line);
+            margin: 0 14px
+        }
+
+        .nav-links .btn {
+            padding: 10px 20px;
+            font-size: 13px
+        }
+
+        /* ============================================================
+   HERO — one idea, lots of air
+   ============================================================ */
+        .hero {
+            position: relative;
+            min-height: 100svh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 140px 24px 100px;
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(var(--hairline) 1px, transparent 1px),
+                linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
+            background-size: 72px 72px;
+            mask-image: radial-gradient(ellipse 75% 62% at 50% 44%, black 25%, transparent 72%);
+            -webkit-mask-image: radial-gradient(ellipse 75% 62% at 50% 44%, black 25%, transparent 72%);
+            opacity: .6;
+        }
+
+        .hero h1 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-size: clamp(54px, 8.6vw, 112px);
+            line-height: 1.12;
+            letter-spacing: 0;
+            max-width: 13ch;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            position: relative;
+            white-space: nowrap
+        }
+
+        .hero h1 em::after {
+            content: "";
+            position: absolute;
+            left: 2%;
+            right: 0;
+            bottom: .06em;
+            height: 1px;
+            background: var(--ink);
+            opacity: .5;
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: rule 1.3s var(--ease) 1.2s forwards;
+        }
+
+        @keyframes rule {
+            to {
+                transform: scaleX(1)
+            }
+        }
+
+        .hero p.sub {
+            margin-top: 34px;
+            max-width: 480px;
+            color: var(--dim);
+            font-size: 17px;
+            line-height: 1.85;
+        }
+
+        .hero .cta-row {
+            margin-top: 46px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+
+        .hero .eyebrow {
+            margin-bottom: 36px
+        }
+
+
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 34px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .32em;
+            color: var(--ghost);
+            text-transform: uppercase;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .scroll-hint::after {
+            content: "";
+            width: 1px;
+            height: 36px;
+            background: linear-gradient(var(--ghost), transparent);
+            animation: sink 2.4s ease-in-out infinite
+        }
+
+        @keyframes sink {
+            0% {
+                transform: scaleY(0);
+                transform-origin: top
+            }
+
+            45% {
+                transform: scaleY(1);
+                transform-origin: top
+            }
+
+            55% {
+                transform: scaleY(1);
+                transform-origin: bottom
+            }
+
+            100% {
+                transform: scaleY(0);
+                transform-origin: bottom
+            }
+        }
+
+        /* ============================================================
+   TICKER
+   ============================================================ */
+        .ticker {
+            border-top: 1px solid var(--hairline);
+            border-bottom: 1px solid var(--hairline);
+            overflow: hidden;
+            padding: 22px 0;
+            position: relative;
+        }
+
+        .ticker::before,
+        .ticker::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 140px;
+            z-index: 2;
+            pointer-events: none
+        }
+
+        .ticker::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--bg), transparent)
+        }
+
+        .ticker::after {
+            right: 0;
+            background: linear-gradient(-90deg, var(--bg), transparent)
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 72px;
+            width: max-content;
+            animation: scrollx 52s linear infinite
+        }
+
+        @keyframes scrollx {
+            to {
+                transform: translateX(-50%)
+            }
+        }
+
+        .tk {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            white-space: nowrap
+        }
+
+        .tk .q {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-style: italic
+        }
+
+        .tk .w {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .16em;
+            color: var(--ghost);
+            text-transform: uppercase
+        }
+
+        /* ============================================================
+   SECTIONS
+   ============================================================ */
+        section {
+            padding: 150px 0
+        }
+
+        .sec-head {
+            max-width: 600px;
+            margin-bottom: 70px
+        }
+
+        .sec-head.center {
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center
+        }
+
+        .sec-head h2 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-size: clamp(38px, 4.4vw, 58px);
+            line-height: 1.18;
+            letter-spacing: 0;
+            margin-top: 24px;
+        }
+
+        .sec-head h2 em {
+            font-style: italic
+        }
+
+        .sec-head p {
+            margin-top: 22px;
+            color: var(--dim);
+            font-size: 16.5px;
+            line-height: 1.85;
+            max-width: 500px
+        }
+
+        .sec-head.center p {
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .sec-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--ghost);
+            letter-spacing: .32em
+        }
+
+        /* ============================================================
+   MAP DEMO
+   ============================================================ */
+        .map-stage {
+            position: relative;
+            border: 1px solid var(--line);
+            border-radius: 26px;
+            background: var(--panel);
+            overflow: hidden;
+            height: 620px;
+            box-shadow: 0 50px 120px rgba(0, 0, 0, .55);
+        }
+
+        .map-stage .streets {
+            position: absolute;
+            inset: 0
+        }
+
+        .map-stage .streets svg {
+            width: 100%;
+            height: 100%
+        }
+
+        .map-chrome {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 26px;
+            pointer-events: none;
+        }
+
+        .map-chrome .logo {
+            font-size: 21px
+        }
+
+        .map-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(17, 17, 16, .85);
+            border: 1px solid var(--line);
+            border-radius: 100px;
+            padding: 10px 20px;
+            min-width: 220px;
+            font-size: 13px;
+            color: var(--ghost);
+            backdrop-filter: blur(8px);
+        }
+
+        .zoom-toggle {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            z-index: 10;
+            display: flex;
+            background: rgba(17, 17, 16, .92);
+            border: 1px solid var(--line);
+            border-radius: 100px;
+            padding: 4px;
+            backdrop-filter: blur(8px);
+        }
+
+        .zoom-toggle button {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            border-radius: 100px;
+            color: var(--dim);
+            transition: all .3s;
+        }
+
+        .zoom-toggle button.on {
+            background: var(--ink);
+            color: var(--bg)
+        }
+
+        .map-hint {
+            position: absolute;
+            bottom: 28px;
+            right: 26px;
+            z-index: 10;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--ghost);
+        }
+
+        /* pins */
+        .pin-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            transition: opacity .5s var(--ease), transform .6s var(--ease)
+        }
+
+        .pin-layer.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.06)
+        }
+
+        .pin-layer.hidden.out {
+            transform: scale(.92)
+        }
+
+        .pin {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform .25s var(--ease);
+        }
+
+        .pin:hover {
+            transform: translate(-50%, -100%) scale(1.14)
+        }
+
+        .pin .head {
+            width: 30px;
+            height: 30px;
+            border-radius: 11px;
+            background: var(--ink);
+            display: grid;
+            place-items: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .65);
+        }
+
+        .pin .head::after {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--bg)
+        }
+
+        .pin .tail {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 7px solid var(--ink);
+            margin-top: -1px;
+        }
+
+        .pin .halo {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            transform: translate(-50%, -50%);
+            border: 1px solid var(--ink);
+            opacity: 0;
+        }
+
+        .pin.fresh .halo {
+            animation: halo 2.8s ease-out infinite
+        }
+
+        @keyframes halo {
+            0% {
+                opacity: .7;
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2.4)
+            }
+        }
+
+        /* clusters */
+        .cluster {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            background: var(--ink);
+            color: var(--bg);
+            font-family: var(--mono);
+            font-weight: 400;
+            box-shadow: 0 10px 34px rgba(0, 0, 0, .6);
+            transition: transform .25s var(--ease);
+        }
+
+        .cluster:hover {
+            transform: translate(-50%, -50%) scale(1.08)
+        }
+
+        .cluster::before {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1px solid var(--line)
+        }
+
+        .cluster::after {
+            content: "";
+            position: absolute;
+            inset: -18px;
+            border-radius: 50%;
+            border: 1px solid var(--hairline)
+        }
+
+        .c-lg {
+            width: 62px;
+            height: 62px;
+            font-size: 17px
+        }
+
+        .c-md {
+            width: 46px;
+            height: 46px;
+            font-size: 14px
+        }
+
+        .c-sm {
+            width: 36px;
+            height: 36px;
+            font-size: 12px
+        }
+
+        /* ---------- NOTE POPUP · redesigned ---------- */
+        .note-card {
+            position: absolute;
+            z-index: 20;
+            width: min(380px, calc(100% - 40px));
+            background: linear-gradient(180deg, #131312 0%, #0D0D0C 100%);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(245, 243, 238, .06);
+            opacity: 0;
+            transform: translateY(16px) scale(.97);
+            pointer-events: none;
+            transition: opacity .45s var(--ease), transform .45s var(--ease);
+            overflow: hidden;
+        }
+
+        .note-card.open {
+            opacity: 1;
+            transform: none;
+            pointer-events: auto
+        }
+
+        .nc-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 20px 0;
+        }
+
+        .nc-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 1px dashed rgba(245, 243, 238, .35);
+            display: grid;
+            place-items: center;
+        }
+
+        .nc-avatar::after {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ink)
+        }
+
+        .nc-who {
+            flex: 1;
+            min-width: 0
+        }
+
+        .nc-who .name {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: .01em;
+            line-height: 1.3
+        }
+
+        .nc-who .place {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .16em;
+            color: var(--ghost);
+            text-transform: uppercase;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nc-who .place svg {
+            width: 10px;
+            height: 10px;
+            stroke: var(--ghost);
+            fill: none;
+            stroke-width: 1.6;
+            flex-shrink: 0
+        }
+
+        .nc-time {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .12em;
+            color: var(--ghost);
+            text-transform: uppercase
+        }
+
+        .nc-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            color: var(--ghost);
+            transition: all .25s;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .nc-close:hover {
+            color: var(--ink);
+            background: rgba(245, 243, 238, .07)
+        }
+
+        .nc-body {
+            padding: 20px 24px 6px
+        }
+
+        .nc-text {
+            font-family: var(--serif);
+            font-size: 24px;
+            line-height: 1.45;
+            letter-spacing: 0;
+            text-indent: -.42em;
+        }
+
+        .nc-text::before {
+            content: "\201C";
+            color: var(--ghost)
+        }
+
+        .nc-text::after {
+            content: "\201D";
+            color: var(--ghost)
+        }
+
+        .nc-foot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-top: 1px solid var(--hairline);
+            background: rgba(245, 243, 238, .02);
+        }
+
+        .nc-act {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--dim);
+            padding: 9px 14px;
+            border-radius: 100px;
+            transition: all .25s;
+        }
+
+        .nc-act:hover {
+            color: var(--ink);
+            background: rgba(245, 243, 238, .07)
+        }
+
+        .nc-act svg {
+            width: 15px;
+            height: 15px;
+            stroke-width: 1.7
+        }
+
+        .nc-act.echoed {
+            color: var(--ink)
+        }
+
+        .nc-share {
+            margin-left: auto;
+            background: var(--ink);
+            color: var(--bg);
+            font-weight: 600;
+            padding: 9px 18px;
+        }
+
+        .nc-share:hover {
+            background: var(--ink);
+            color: var(--bg);
+            box-shadow: 0 8px 24px rgba(245, 243, 238, .16)
+        }
+
+        /* ============================================================
+   HOW IT WORKS
+   ============================================================ */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 56px
+        }
+
+        .step {
+            position: relative;
+            padding-top: 34px
+        }
+
+        .step::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 44px;
+            height: 1px;
+            background: var(--ink);
+            opacity: .5;
+        }
+
+        .step .k {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: .3em;
+            color: var(--ghost);
+            display: block;
+            margin-bottom: 22px
+        }
+
+        .step h3 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-size: 28px;
+            line-height: 1.3;
+            margin-bottom: 14px
+        }
+
+        .step p {
+            color: var(--dim);
+            font-size: 15px;
+            line-height: 1.8
+        }
+
+        @media(max-width:860px) {
+            .steps {
+                grid-template-columns: 1fr;
+                gap: 48px
+            }
+        }
+
+        /* composer strip */
+        .composer-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            margin-top: 130px
+        }
+
+        @media(max-width:920px) {
+            .composer-wrap {
+                grid-template-columns: 1fr;
+                gap: 56px
+            }
+        }
+
+        .composer {
+            background: var(--raise);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 28px;
+            max-width: 420px;
+            margin: 0 auto;
+            width: 100%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, .6);
+        }
+
+        .cm-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px
+        }
+
+        .cm-loc {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+            color: var(--dim)
+        }
+
+        .cm-loc i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ink);
+            animation: blink 2s infinite
+        }
+
+        .cm-area {
+            border: 1px solid var(--hairline);
+            border-radius: 16px;
+            background: var(--panel);
+            padding: 20px;
+            min-height: 124px;
+            font-family: var(--serif);
+            font-size: 21px;
+            color: var(--ghost);
+            line-height: 1.5;
+        }
+
+        .cm-area .caret {
+            display: inline-block;
+            width: 1px;
+            height: 1.05em;
+            background: var(--ink);
+            vertical-align: -3px;
+            animation: blink 1.1s steps(1) infinite
+        }
+
+        .cm-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            font-family: var(--mono);
+            font-size: 10.5px;
+            letter-spacing: .16em;
+            color: var(--ghost);
+            text-transform: uppercase
+        }
+
+        .cm-btn {
+            width: 100%;
+            margin-top: 20px;
+            justify-content: center;
+            padding: 15px
+        }
+
+        .composer-copy h3 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-size: clamp(32px, 3.6vw, 44px);
+            line-height: 1.22;
+            margin-bottom: 22px
+        }
+
+        .composer-copy h3 em {
+            font-style: italic
+        }
+
+        .composer-copy p {
+            color: var(--dim);
+            max-width: 430px;
+            font-size: 16px;
+            line-height: 1.85
+        }
+
+        .composer-copy ul {
+            list-style: none;
+            margin-top: 34px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px
+        }
+
+        .composer-copy li {
+            display: flex;
+            gap: 16px;
+            font-size: 15px;
+            color: var(--dim);
+            line-height: 1.7
+        }
+
+        .composer-copy li b {
+            color: var(--ink);
+            font-weight: 500
+        }
+
+        .composer-copy li::before {
+            content: "—";
+            color: var(--ghost);
+            flex-shrink: 0
+        }
+
+        /* ============================================================
+   SHARE / STORY CARD
+   ============================================================ */
+        .share-sec {
+            background: var(--panel);
+            border-top: 1px solid var(--hairline);
+            border-bottom: 1px solid var(--hairline)
+        }
+
+        .share-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 90px;
+            align-items: center
+        }
+
+        @media(max-width:960px) {
+            .share-grid {
+                grid-template-columns: 1fr;
+                gap: 64px
+            }
+        }
+
+        .story-card {
+            width: 320px;
+            aspect-ratio: 9/16;
+            margin: 0 auto;
+            background: #050505;
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 60px 140px rgba(0, 0, 0, .75), inset 0 0 0 1px rgba(245, 243, 238, .03);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 32px 36px;
+        }
+
+        .story-card .grid-bg {
+            position: absolute;
+            inset: 0;
+            opacity: .55;
+            background-image:
+                linear-gradient(var(--hairline) 1px, transparent 1px),
+                linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(ellipse at 50% 42%, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse at 50% 42%, black, transparent 80%);
+        }
+
+        .sc-eyebrow {
+            position: relative;
+            z-index: 2;
+            font-family: var(--mono);
+            font-size: 8.5px;
+            letter-spacing: .4em;
+            text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        .sc-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 8px 0;
+            width: 100%;
+        }
+
+        .sc-openq {
+            font-family: var(--serif);
+            font-size: 56px;
+            line-height: .35;
+            color: var(--ghost);
+            margin-bottom: 24px
+        }
+
+        .sc-text {
+            font-family: var(--serif);
+            font-size: 26px;
+            line-height: 1.42;
+            word-wrap: break-word;
+            width: 100%
+        }
+
+        .sc-author {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: .3em;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-top: 26px;
+        }
+
+        .sc-bottom {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px
+        }
+
+        .sc-rule {
+            width: 30px;
+            height: 1px;
+            background: var(--line)
+        }
+
+        .sc-wordmark {
+            font-family: var(--serif);
+            font-size: 34px;
+            line-height: 1
+        }
+
+        .sc-tag {
+            font-family: var(--mono);
+            font-size: 7.5px;
+            letter-spacing: .34em;
+            text-transform: uppercase;
+            color: var(--ghost)
+        }
+
+        .share-copy .sec-head {
+            margin-bottom: 38px
+        }
+
+        .share-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            max-width: 440px
+        }
+
+        .share-tools textarea {
+            width: 100%;
+            background: var(--raise);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 19px;
+            padding: 18px 20px;
+            resize: none;
+            min-height: 96px;
+            outline: none;
+            transition: border-color .3s;
+            line-height: 1.5;
+        }
+
+        .share-tools textarea:focus {
+            border-color: rgba(245, 243, 238, .4)
+        }
+
+        .share-tools textarea::placeholder {
+            color: var(--ghost)
+        }
+
+        .share-btns {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .share-note-small {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .18em;
+            color: var(--ghost);
+            text-transform: uppercase
+        }
+
+        .count {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            color: var(--ghost);
+            text-align: right;
+            letter-spacing: .1em
+        }
+
+        /* ============================================================
+   CLOSING — the hook
+   ============================================================ */
+        .closing {
+            position: relative;
+            text-align: center;
+            padding: 210px 24px;
+            overflow: hidden;
+        }
+
+        .closing .hero-grid {
+            opacity: .45
+        }
+
+        .closing .eyebrow {
+            margin-bottom: 40px
+        }
+
+        .closing h2 {
+            font-family: var(--serif);
+            font-weight: 400;
+            font-size: clamp(42px, 6.4vw, 84px);
+            line-height: 1.16;
+            letter-spacing: 0;
+            max-width: 16ch;
+            margin: 0 auto;
+        }
+
+        .closing h2 em {
+            font-style: italic
+        }
+
+        .closing p.sub {
+            margin: 30px auto 0;
+            max-width: 440px;
+            color: var(--dim);
+            font-size: 17px;
+            line-height: 1.85
+        }
+
+        .closing .btn {
+            margin-top: 48px;
+            font-size: 15px;
+            padding: 17px 34px
+        }
+
+        footer {
+            border-top: 1px solid var(--hairline);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 34px 36px;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        footer .logo {
+            font-size: 21px
+        }
+
+        footer .fl {
+            display: flex;
+            gap: 28px;
+            font-size: 13px;
+            color: var(--ghost)
+        }
+
+        footer .fl a {
+            transition: color .3s
+        }
+
+        footer .fl a:hover {
+            color: var(--ink)
+        }
+
+        footer .tag {
+            font-family: var(--mono);
+            font-size: 9.5px;
+            letter-spacing: .24em;
+            color: var(--ghost);
+            text-transform: uppercase
+        }
+
+        /* toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translate(-50%, 90px);
+            background: var(--ink);
+            color: var(--bg);
+            font-size: 13.5px;
+            font-weight: 600;
+            padding: 14px 26px;
+            border-radius: 100px;
+            z-index: 100;
+            transition: transform .5s var(--ease);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translate(-50%, 0)
+        }
+
+        @media(max-width:640px) {
+            .nav-in {
+                padding: 16px 22px
+            }
+
+            nav.scrolled .nav-in {
+                padding: 12px 22px
+            }
+
+            .nav-links a.link,
+            .nav-sep {
+                display: none
+            }
+
+            section {
+                padding: 100px 0
+            }
+
+            .map-stage {
+                height: 530px
+            }
+
+            .map-search {
+                display: none
+            }
+
+            .composer {
+                padding: 22px
+            }
+
+            .closing {
+                padding: 150px 24px
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important
+            }
+
+            html {
+                scroll-behavior: auto
+            }
+
+            .rv {
+                opacity: 1;
+                transform: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================= NAV ================= -->
+    <nav id="nav">
+        <div class="nav-in">
+            <a class="logo" href="#">noted</a>
+            <div class="nav-links">
+                <a href="#map" class="link">The map</a>
+                <a href="#how" class="link">How it works</a>
+                <a href="#share" class="link">Share a note</a>
+                <span class="nav-sep"></span>
+                <a href="#" class="btn">Open the map</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= HERO ================= -->
+    <header class="hero">
+        <div class="hero-grid" aria-hidden="true"></div>
+
+        <span class="eyebrow rv"><span class="dot"></span>Anonymous · Pinned to real places</span>
+        <h1 class="rv d1">Every place has something <em>unsaid.</em></h1>
+        <p class="sub rv d2">Leave anonymous notes at the exact spot where they happened — and find the ones strangers
+            left behind for you.</p>
+        <div class="cta-row rv d3">
+            <a href="#map" class="btn">Open the map
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+            </a>
+            <a href="#how" class="btn ghost">How it works</a>
+        </div>
+        <div class="scroll-hint" aria-hidden="true">scroll</div>
+    </header>
+
+    <!-- ================= TICKER ================= -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+    <!-- ================= MAP DEMO ================= -->
+    <section id="map">
+        <div class="wrap">
+            <div class="sec-head rv">
+                <span class="sec-num">01 — THE MAP</span>
+                <h2>A quieter kind of <em>map.</em></h2>
+                <p>Notes appear exactly where they were left. Zoom out and they gather into clusters — every circle is a
+                    place where someone had something to say.</p>
+            </div>
+
+            <div class="map-stage rv d1" id="mapStage">
+                <div class="streets" aria-hidden="true">
+                    <svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice">
+                        <g stroke="#171715" stroke-width="1" fill="none">
+                            <path d="M-20 140 L500 200 L1220 160" />
+                            <path d="M-20 340 L420 380 L900 330 L1220 370" />
+                            <path d="M-20 500 L620 540 L1220 480" />
+                            <path d="M180 -20 L220 620" />
+                            <path d="M430 -20 L390 620" />
+                            <path d="M640 -20 L690 620" stroke-width="2.4" stroke="#1f1f1d" />
+                            <path d="M900 -20 L860 620" />
+                            <path d="M1090 -20 L1130 620" />
+                            <path d="M300 60 Q430 240 330 430 T420 620" stroke-dasharray="2 6" />
+                            <path d="M780 0 Q900 200 810 400 T950 620" stroke-dasharray="2 6" />
+                            <path d="M-20 60 L1220 100" stroke-dasharray="3 7" />
+                        </g>
+                        <g stroke="#131311" stroke-width="1" fill="none">
+                            <rect x="80" y="200" width="58" height="40" />
+                            <rect x="500" y="250" width="46" height="52" />
+                            <rect x="960" y="210" width="66" height="42" />
+                            <rect x="270" y="470" width="52" height="38" />
+                            <rect x="740" y="420" width="56" height="42" />
+                            <rect x="1060" y="500" width="44" height="44" />
+                            <rect x="560" y="90" width="50" height="36" />
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="map-chrome" aria-hidden="true">
+                    <span class="logo">noted</span>
+                    <div class="map-search">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="M21 21l-4.3-4.3" />
+                        </svg>
+                        Search a place…
+                    </div>
+                </div>
+
+                <!-- zoomed in : pins -->
+                <div class="pin-layer" id="pinsIn">
+                    <button class="pin fresh" style="left:44%;top:46%" data-note="0" aria-label="Open note"><span
+                            class="halo"></span><span class="head"></span><span class="tail"></span></button>
+                    <button class="pin" style="left:58%;top:34%" data-note="1" aria-label="Open note"><span
+                            class="head"></span><span class="tail"></span></button>
+                    <button class="pin" style="left:30%;top:62%" data-note="2" aria-label="Open note"><span
+                            class="head"></span><span class="tail"></span></button>
+                    <button class="pin" style="left:70%;top:60%" data-note="3" aria-label="Open note"><span
+                            class="head"></span><span class="tail"></span></button>
+                    <button class="pin" style="left:52%;top:74%" data-note="4" aria-label="Open note"><span
+                            class="head"></span><span class="tail"></span></button>
+                    <button class="pin" style="left:22%;top:30%" data-note="5" aria-label="Open note"><span
+                            class="head"></span><span class="tail"></span></button>
+                </div>
+
+                <!-- zoomed out : clusters -->
+                <div class="pin-layer hidden out" id="pinsOut">
+                    <button class="cluster c-lg" style="left:47%;top:47%" aria-label="12 notes here">12</button>
+                    <button class="cluster c-md" style="left:71%;top:32%" aria-label="5 notes here">5</button>
+                    <button class="cluster c-sm" style="left:26%;top:64%" aria-label="3 notes here">3</button>
+                    <button class="cluster c-md" style="left:64%;top:70%" aria-label="7 notes here">7</button>
+                    <button class="cluster c-sm" style="left:20%;top:26%" aria-label="2 notes here">2</button>
+                </div>
+
+                <!-- note popup -->
+                <div class="note-card" id="noteCard" role="dialog" aria-label="Note">
+                    <div class="nc-head">
+                        <span class="nc-avatar" aria-hidden="true"></span>
+                        <div class="nc-who">
+                            <div class="name" id="ncAuthor">anonymous</div>
+                            <div class="place">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 21c0 0-7-7.6-7-12a7 7 0 0 1 14 0c0 4.4-7 12-7 12z" />
+                                    <circle cx="12" cy="9" r="2" />
+                                </svg>
+                                <span id="ncPlace">Near Katipunan Ave</span>
+                            </div>
+                        </div>
+                        <span class="nc-time" id="ncTime">35m ago</span>
+                        <button class="nc-close" id="ncClose" aria-label="Close note">✕</button>
+                    </div>
+                    <div class="nc-body">
+                        <p class="nc-text" id="ncText">What's on your mind</p>
+                    </div>
+                    <div class="nc-foot">
+                        <button class="nc-act" id="ncEcho">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 3a9 9 0 0 1 9 9M12 7a5 5 0 0 1 5 5" />
+                            </svg>
+                            <span id="echoCount">12</span>
+                        </button>
+                        <button class="nc-act">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z" />
+                            </svg>
+                            Reply
+                        </button>
+                        <button class="nc-act nc-share" id="ncShare">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M12 3v13M7 8l5-5 5 5M5 21h14" />
+                            </svg>
+                            Share
+                        </button>
+                    </div>
+                </div>
+
+                <div class="zoom-toggle" role="tablist" aria-label="Map zoom demo">
+                    <button class="on" id="zoomIn" role="tab" aria-selected="true">Street</button>
+                    <button id="zoomOut" role="tab" aria-selected="false">City</button>
+                </div>
+                <div class="map-hint">tap a pin</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= HOW IT WORKS ================= -->
+    <section id="how" style="padding-top:0">
+        <div class="wrap">
+            <div class="sec-head rv">
+                <span class="sec-num">02 — HOW IT WORKS</span>
+                <h2>Say it. Pin it. <em>Leave it.</em></h2>
+            </div>
+
+            <div class="steps rv d1">
+                <div class="step">
+                    <span class="k">01</span>
+                    <h3>Write the unsaid</h3>
+                    <p>A confession, a joke, a goodbye, a thank-you. Up to 300 characters. No account, no name — unless
+                        you want one.</p>
+                </div>
+                <div class="step">
+                    <span class="k">02</span>
+                    <h3>Pin it where it happened</h3>
+                    <p>Your note locks to the spot you're standing on — or blur it within 200&nbsp;m if the place says
+                        too much.</p>
+                </div>
+                <div class="step">
+                    <span class="k">03</span>
+                    <h3>Let strangers find it</h3>
+                    <p>Anyone passing through can read it, echo it, or reply. Some notes fade in a day. Some stay
+                        forever.</p>
+                </div>
+            </div>
+
+            <!-- composer mock -->
+            <div class="composer-wrap">
+                <div class="composer rv" aria-hidden="true">
+                    <div class="cm-top">
+                        <span class="cm-loc"><i></i>You are here</span>
+                        <span
+                            style="font-family:var(--mono);font-size:10px;color:var(--ghost);letter-spacing:.2em">300</span>
+                    </div>
+                    <div class="cm-area">Say what you couldn't.<span class="caret"></span></div>
+                    <div class="cm-row"><span>anonymous</span><span>stays forever</span></div>
+                    <button class="btn cm-btn">Pin it here</button>
+                </div>
+                <div class="composer-copy rv d1">
+                    <h3>Built for the things you <em>can't say out loud.</em></h3>
+                    <p>noted isn't a feed. There are no followers, no likes to chase, no profile to perform. Just a
+                        place, a moment, and the words you left behind.</p>
+                    <ul>
+                        <li><span><b>Anonymous by default.</b> Sign a note only if you choose to.</span></li>
+                        <li><span><b>Location-honest.</b> Notes can only be dropped where you're standing.</span></li>
+                        <li><span><b>Ephemeral or forever.</b> You decide how long it lives.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SHARE ================= -->
+    <section id="share" class="share-sec">
+        <div class="wrap">
+            <div class="share-grid">
+                <div class="share-copy">
+                    <div class="sec-head rv">
+                        <span class="sec-num">03 — SHARE A NOTE</span>
+                        <h2>Some notes deserve to <em>travel.</em></h2>
+                        <p>Every note exports as a clean, story-sized card — just the words and the mark they left. Made
+                            to be posted, and wondered about.</p>
+                    </div>
+                    <div class="share-tools rv d1">
+                        <textarea id="shareInput" maxlength="140" rows="3"
+                            placeholder="Type a note to preview it…">I never told you, but the day we met at this corner was the day everything got better.</textarea>
+                        <div class="count"><span id="charCount">92</span> / 140</div>
+                        <div class="share-btns">
+                            <button class="btn" id="downloadCard">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 3v13M7 11l5 5 5-5M5 21h14" />
+                                </svg>
+                                Download story card
+                            </button>
+                            <button class="btn ghost" id="shareCard">Share</button>
+                        </div>
+                        <span class="share-note-small">1080 × 1920 · fits instagram &amp; tiktok stories</span>
+                    </div>
+                </div>
+
+                <!-- live story card preview -->
+                <div class="rv d2">
+                    <div class="story-card" id="storyCard">
+                        <div class="grid-bg" aria-hidden="true"></div>
+                        <div class="sc-eyebrow">A note left behind</div>
+                        <div class="sc-body">
+                            <div class="sc-openq">“</div>
+                            <div class="sc-text" id="scText">I never told you, but the day we met at this corner was the
+                                day everything got better.</div>
+                            <div class="sc-author">— anonymous</div>
+                        </div>
+                        <div class="sc-bottom">
+                            <div class="sc-rule"></div>
+                            <div class="sc-wordmark">noted</div>
+                            <div class="sc-tag">Every place has something unsaid</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= CLOSING ================= -->
+    <div class="closing">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <span class="eyebrow rv"><span class="dot"></span>Your turn</span>
+        <h2 class="rv d1">Every place has something unsaid.<br><em>Now it has somewhere to go.</em></h2>
+        <a href="#" class="btn rv d2">Leave your first note
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+        </a>
+    </div>
+
+    <footer>
+        <span class="logo">noted</span>
+        <div class="fl">
+            <a href="#how">How it works</a>
+            <a href="#">About</a>
+            <a href="#">Guidelines</a>
+            <a href="#">Privacy</a>
+        </div>
+        <span class="tag">Every place has something unsaid</span>
+    </footer>
+
+    <div class="toast" id="toast">Saved — post it anywhere.</div>
+    <canvas id="exportCanvas" width="1080" height="1920" style="display:none"></canvas>
+
+    <script>
+        /* ============ nav scroll ============ */
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 30), { passive: true });
+
+        /* ============ reveal ============ */
+        const io = new IntersectionObserver(es => es.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        }), { threshold: .15 });
+        document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+        /* ============ ticker ============ */
+        const tickerNotes = [
+            ["I got the job. First person I wanted to tell was you.", "left 3m ago"],
+            ["To whoever returned my wallet here — you restored something.", "left 12m ago"],
+            ["We broke up on this bench. I'm okay now.", "left 41m ago"],
+            ["Best mangoes in the city are from the cart right here. Tell no one.", "left 1h ago"],
+            ["Dad, I passed the boards. I know you can't read this.", "left 2h ago"],
+            ["If you hum in this stairwell — I hear you. It's lovely.", "left 4h ago"],
+            ["I'm sorry I didn't wave back. I was crying and didn't want you to see.", "left 6h ago"],
+        ];
+        const track = document.getElementById('tickerTrack');
+        const half = tickerNotes.map(([q, w]) =>
+            `<div class="tk"><span class="q">“${q}”</span><span class="w">${w}</span></div>`).join('');
+        track.innerHTML = half + half;
+
+        /* ============ map demo ============ */
+        const demoNotes = [
+            { t: "What's on your mind", w: "35m ago", p: "Near Katipunan Ave", e: 12 },
+            { t: "I studied across this street for four years and never once said hi to you.", w: "1h ago", p: "Near Esteban Abada St", e: 34 },
+            { t: "This is where I decided to stay.", w: "2h ago", p: "Near Xavierville Ave", e: 58 },
+            { t: "Someone plays piano on this block every evening. Thank you, whoever you are.", w: "5h ago", p: "Near Rosa Alvero St", e: 91 },
+            { t: "Ate here alone for the first time. It wasn't sad at all.", w: "8h ago", p: "Near Aurora Blvd", e: 23 },
+            { t: "Lost my grandmother's ring near here. If you find it, leave a note.", w: "1d ago", p: "Near B. Gonzales St", e: 7 },
+        ];
+        const pinsIn = document.getElementById('pinsIn');
+        const pinsOut = document.getElementById('pinsOut');
+        const zIn = document.getElementById('zoomIn');
+        const zOut = document.getElementById('zoomOut');
+        const card = document.getElementById('noteCard');
+        const stage = document.getElementById('mapStage');
+        let echoed = false;
+        let currentNote = demoNotes[0];
+
+        function setZoom(street) {
+            pinsIn.classList.toggle('hidden', !street);
+            pinsOut.classList.toggle('hidden', street);
+            zIn.classList.toggle('on', street);
+            zOut.classList.toggle('on', !street);
+            zIn.setAttribute('aria-selected', street);
+            zOut.setAttribute('aria-selected', !street);
+            closeCard();
+        }
+        zIn.addEventListener('click', () => setZoom(true));
+        zOut.addEventListener('click', () => setZoom(false));
+        document.querySelectorAll('.cluster').forEach(c => c.addEventListener('click', () => setZoom(true)));
+
+        function openCard(i, pinEl) {
+            const n = demoNotes[i];
+            currentNote = n;
+            document.getElementById('ncText').textContent = n.t;
+            document.getElementById('ncTime').textContent = n.w;
+            document.getElementById('ncPlace').textContent = n.p;
+            const ec = document.getElementById('echoCount');
+            ec.textContent = n.e;
+            echoed = false;
+            document.getElementById('ncEcho').classList.remove('echoed');
+
+            const sr = stage.getBoundingClientRect();
+            const pr = pinEl.getBoundingClientRect();
+            const cw = Math.min(380, sr.width - 40);
+            let x = pr.left - sr.left + pr.width / 2 - cw / 2;
+            let y = pr.top - sr.top + pr.height + 14;
+            x = Math.max(20, Math.min(x, sr.width - cw - 20));
+            if (y + 250 > sr.height) y = pr.top - sr.top - 265;
+            y = Math.max(70, y);
+            card.style.left = x + 'px';
+            card.style.top = y + 'px';
+            card.classList.add('open');
+        }
+        function closeCard() { card.classList.remove('open'); }
+        document.querySelectorAll('.pin').forEach(p =>
+            p.addEventListener('click', e => { e.stopPropagation(); openCard(+p.dataset.note, p); }));
+        document.getElementById('ncClose').addEventListener('click', closeCard);
+        stage.addEventListener('click', e => { if (!card.contains(e.target) && !e.target.closest('.pin')) closeCard(); });
+
+        document.getElementById('ncEcho').addEventListener('click', function () {
+            const c = document.getElementById('echoCount');
+            c.textContent = +c.textContent + (echoed ? -1 : 1);
+            echoed = !echoed;
+            this.classList.toggle('echoed', echoed);
+        });
+
+        /* share from map note → prefill share section */
+        document.getElementById('ncShare').addEventListener('click', () => {
+            const inp = document.getElementById('shareInput');
+            inp.value = currentNote.t.slice(0, 140);
+            inp.dispatchEvent(new Event('input'));
+            document.getElementById('share').scrollIntoView({ behavior: 'smooth' });
+            closeCard();
+        });
+
+        /* ============ live story card ============ */
+        const shareInput = document.getElementById('shareInput');
+        const scText = document.getElementById('scText');
+        const charCount = document.getElementById('charCount');
+        function fitText() {
+            const len = shareInput.value.length;
+            scText.style.fontSize = (len > 110 ? 21 : len > 70 ? 24 : 27) + 'px';
+        }
+        shareInput.addEventListener('input', () => {
+            scText.textContent = shareInput.value || 'Say what you couldn\u2019t.';
+            charCount.textContent = shareInput.value.length;
+            fitText();
+        });
+        fitText();
+
+        /* ============ toast ============ */
+        const toast = document.getElementById('toast');
+        let toastTimer;
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+        }
+
+        /* ============ canvas export (1080×1920) ============ */
+        function wrapLines(ctx, text, maxWidth) {
+            const words = text.split(/\s+/).filter(Boolean);
+            const lines = [];
+            let line = '';
+            for (const w of words) {
+                const test = line ? line + ' ' + w : w;
+                if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+                else line = test;
+            }
+            if (line) lines.push(line);
+            return lines;
+        }
+        function spaced(s) { return s.toUpperCase().split('').join('\u2009\u2009'); }
+
+        async function renderCard() {
+            await document.fonts.ready;
+            const cv = document.getElementById('exportCanvas');
+            const ctx = cv.getContext('2d');
+            const W = 1080, H = 1920;
+            const INK = '#F5F3EE', DIM = '#A3A19A', GHOST = '#5C5A55';
+
+            /* bg */
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, W, H);
+
+            /* faint grid with radial fade */
+            ctx.save();
+            const grad = ctx.createRadialGradient(W / 2, H * 0.44, 100, W / 2, H * 0.44, H * 0.6);
+            grad.addColorStop(0, 'rgba(245,243,238,.085)');
+            grad.addColorStop(1, 'rgba(245,243,238,0)');
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 1.5;
+            for (let x = 70; x < W; x += 148) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+            for (let y = 70; y < H; y += 148) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+            ctx.restore();
+
+            ctx.textAlign = 'center';
+
+            /* eyebrow */
+            ctx.fillStyle = DIM;
+            ctx.font = '26px "Space Mono"';
+            ctx.fillText(spaced('A note left behind'), W / 2, 190);
+
+            /* note text */
+            const text = shareInput.value.trim() || 'Say what you couldn\u2019t.';
+            let size = text.length > 110 ? 74 : text.length > 70 ? 84 : 96;
+            ctx.font = size + 'px "Instrument Serif"';
+            let lines = wrapLines(ctx, text, W - 240);
+            while (lines.length > 8 && size > 56) {
+                size -= 6;
+                ctx.font = size + 'px "Instrument Serif"';
+                lines = wrapLines(ctx, text, W - 240);
+            }
+            const lh = size * 1.42;
+            const blockH = lines.length * lh;
+            let y0 = H * 0.47 - blockH / 2 + lh * 0.6;
+
+            /* opening quote */
+            ctx.fillStyle = GHOST;
+            ctx.font = '180px "Instrument Serif"';
+            ctx.fillText('\u201C', W / 2, y0 - lh * 0.8);
+
+            ctx.fillStyle = INK;
+            ctx.font = size + 'px "Instrument Serif"';
+            lines.forEach((ln, i) => ctx.fillText(ln, W / 2, y0 + i * lh));
+
+            /* author */
+            ctx.fillStyle = DIM;
+            ctx.font = '27px "Space Mono"';
+            ctx.fillText(spaced('\u2014 anonymous'), W / 2, y0 + blockH + 40);
+
+            /* bottom brand block */
+            ctx.strokeStyle = 'rgba(245,243,238,.22)';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(W / 2 - 50, H - 320); ctx.lineTo(W / 2 + 50, H - 320); ctx.stroke();
+
+            ctx.fillStyle = INK;
+            ctx.font = '110px "Instrument Serif"';
+            ctx.fillText('noted', W / 2, H - 190);
+
+            ctx.fillStyle = GHOST;
+            ctx.font = '22px "Space Mono"';
+            ctx.fillText(spaced('Every place has something unsaid'), W / 2, H - 120);
+
+            return cv;
+        }
+
+        document.getElementById('downloadCard').addEventListener('click', async () => {
+            const cv = await renderCard();
+            cv.toBlob(blob => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'noted-story.png';
+                a.click();
+                URL.revokeObjectURL(a.href);
+                showToast('Saved — post it anywhere.');
+            }, 'image/png');
+        });
+
+        document.getElementById('shareCard').addEventListener('click', async () => {
+            const cv = await renderCard();
+            cv.toBlob(async blob => {
+                const file = new File([blob], 'noted-story.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try { await navigator.share({ files: [file], title: 'noted' }); } catch (e) { }
+                } else {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'noted-story.png';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                    showToast('Sharing not supported here — saved instead.');
+                }
+            }, 'image/png');
+        });
+    </script>
+</body>
+
+</html>

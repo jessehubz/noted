@@ -21,6 +21,7 @@ export async function fetchNotesInBounds(bbox: BBox, since?: string | null): Pro
       let query = supabase
         .from("notes")
         .select("*")
+        .eq("is_deleted", false)
         .gte("latitude", south)
         .lte("latitude", north)
         .gte("longitude", west)

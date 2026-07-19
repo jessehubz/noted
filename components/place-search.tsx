@@ -47,18 +47,11 @@ export function PlaceSearch({ onSelect }: PlaceSearchProps) {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-sm">
-      <div className="flex items-center gap-2 rounded-full bg-black/50 px-4 py-2.5 shadow-lg ring-1 ring-white/10 backdrop-blur-xl">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          className="shrink-0 text-zinc-400"
-          aria-hidden="true"
-        >
-          <circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M11.5 11.5L15 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <div ref={containerRef} className="search-container">
+      <div className="search-bar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" />
         </svg>
         <input
           value={query}
@@ -69,7 +62,7 @@ export function PlaceSearch({ onSelect }: PlaceSearchProps) {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Search a place…"
-          className="w-full bg-transparent text-sm text-white placeholder:text-zinc-400 outline-none"
+          className="search-input"
         />
       </div>
 
@@ -79,12 +72,13 @@ export function PlaceSearch({ onSelect }: PlaceSearchProps) {
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            className="absolute left-0 top-full mt-2 w-full overflow-hidden rounded-2xl bg-zinc-900/95 shadow-xl ring-1 ring-white/10 backdrop-blur-xl"
+            transition={{ duration: 0.2 }}
+            className="search-dropdown"
           >
             {loading ? (
-              <div className="px-4 py-3 text-sm text-zinc-500">Searching…</div>
+              <div className="search-status">Searching…</div>
             ) : results.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-zinc-500">No places found</div>
+              <div className="search-status">No places found</div>
             ) : (
               results.map((place) => (
                 <button
@@ -94,9 +88,13 @@ export function PlaceSearch({ onSelect }: PlaceSearchProps) {
                     setQuery(place.label);
                     setOpen(false);
                   }}
-                  className="block w-full truncate px-4 py-2.5 text-left text-sm text-zinc-200 hover:bg-white/5"
+                  className="search-result"
                 >
-                  {place.label}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" className="search-result-icon">
+                    <path d="M12 21c0 0-7-7.6-7-12a7 7 0 0 1 14 0c0 4.4-7 12-7 12z" />
+                    <circle cx="12" cy="9" r="2" />
+                  </svg>
+                  <span className="search-result-label">{place.label}</span>
                 </button>
               ))
             )}

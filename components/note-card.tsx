@@ -7,21 +7,18 @@ interface NoteCardProps {
   note: Note;
 }
 
-function formatFullDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    + " at " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-}
-
 export function NoteCard({ note }: NoteCardProps) {
   return (
-    <article className="note-card">
-      <p className="note-card-content">{note.content}</p>
-      <div className="note-card-footer">
-        <span className="note-card-author">{note.display_name ?? "anonymous"}</span>
-        <span className="note-card-time" title={formatFullDate(note.created_at)}>
-          {formatRelativeTime(note.created_at)}
-        </span>
+    <article className="nc-card">
+      <div className="nc-head">
+        <span className="nc-avatar" aria-hidden="true" />
+        <div className="nc-who">
+          <span className="nc-name">{note.display_name ?? "anonymous"}</span>
+        </div>
+        <span className="nc-time">{formatRelativeTime(note.created_at)}</span>
+      </div>
+      <div className="nc-body">
+        <p className="nc-text">{note.content}</p>
       </div>
     </article>
   );

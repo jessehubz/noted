@@ -8,11 +8,36 @@ A real-time map where anyone can drop anonymous notes at their exact GPS coordin
 
 ---
 
+## Screenshots
+
+### Landing Page
+![Landing page](public/screenshots/landing.png)
+
+### Map View
+![Map with pins and clusters](public/screenshots/map.png)
+
+### Note Popup
+![Note detail panel with actions](public/screenshots/note-popup.png)
+
+### Compose Note
+![Compose note modal](public/screenshots/compose.png)
+
+### Story Sharing
+![Story card export for Instagram/TikTok](public/screenshots/story-share.png)
+
+### Report Flow
+![Report a note inline flow](public/screenshots/report.png)
+
+### Featured Note
+![Featured note badge top-center](public/screenshots/featured.png)
+
+---
+
 ## Overview
 
 noted is a full-stack web application built for anonymous, location-based expression. Users open an interactive dark-themed map, see notes left by others in real-time, and can pin their own thoughts to their current GPS location — permanently, anonymously, with no edits or takebacks.
 
-The app is designed with a minimalist black aesthetic, focusing on the content and the map itself. It's built for mobile-first but works beautifully on desktop.
+The app is designed with a minimalist dark aesthetic inspired by quiet, confessional spaces — focusing on the content and the map itself. It's built for mobile-first but works beautifully on desktop.
 
 ---
 
@@ -20,26 +45,32 @@ The app is designed with a minimalist black aesthetic, focusing on the content a
 
 ### Core
 - **GPS-locked notes** — Notes are pinned to the user's exact coordinates at the moment of posting. Location cannot be changed before or after.
-- **Fully anonymous posting** — No account required to post a note. No username attached.
-- **Real-time updates** — Notes from other users appear on the map instantly via Supabase Realtime subscriptions.
+- **Account required to post** — Users must create an account to leave a note, ensuring accountability while keeping notes anonymous by default.
+- **Real-time updates** — Notes from other users appear on the map instantly via Supabase Realtime. Deletions propagate in real time too.
 - **Fuzzy location option** — Users can choose to offset their location by ~200m for privacy.
+- **Immutable notes** — Notes cannot be edited once posted. Users can only delete their own notes.
 - **Content moderation** — Server-side filtering blocks harmful content, spam, phone numbers, and all URLs/links.
 
 ### Map
 - **Interactive dark map** — Powered by MapLibre GL JS with OpenFreeMap tiles (no API key required).
-- **Marker clustering** — Nearby notes are grouped into cluster markers with counts, preventing map clutter.
+- **Redesigned pins & clusters** — Cream-colored rounded pins with drop shadows, cluster markers with concentric ring borders.
+- **Smooth zoom behavior** — Consistent clustering transitions in both zoom directions with fade animations.
 - **Auto-locate** — The map flies to the user's current GPS position on load.
 - **Place search** — Search for any city, address, or place (powered by OpenStreetMap Nominatim, proxied server-side).
 - **Time slider** — Filter notes by time period (last hour, day, week, all time).
+- **Featured note** — A top-center badge highlights a noteworthy note (admin-controlled or auto-selected).
 
 ### Social
 - **Comments** — Signed-in users can comment on any note.
 - **Direct messages** — Signed-in users can start a conversation thread about a specific note.
+- **Story-style sharing** — Export any note as a 1080×1920 story card (perfect for Instagram & TikTok Stories). Live preview, custom text editing, and download/share via Web Share API.
+- **Report notes** — Anyone can report a note with a categorized reason (spam, harassment, hate speech, violence, personal info, inappropriate, other). Reports go straight to the admin review queue.
 
 ### Admin Dashboard
 - **Analytics overview** — Total notes, daily activity chart, user counts, flagged content metrics.
 - **Note moderation** — Browse all notes with pagination, flag suspicious content, soft-delete, restore.
-- **Flagged queue** — Review and resolve flagged notes (approve or remove).
+- **Featured note control** — Manually select a specific note as featured, or click "Randomize" for automatic selection.
+- **Report queue** — Review user reports with three actions: reject report (dismiss), approve (keep note), or delete note.
 - **User management** — View active commenters, ban/unban users by Clerk ID.
 - **Map view** — Visual overview of all notes directly in the admin panel.
 - **Role-based access** — Only specified admin emails can access the dashboard.
@@ -51,7 +82,7 @@ The app is designed with a minimalist black aesthetic, focusing on the content a
 - **Rate limiting** — Upstash Redis-based rate limiting across all serverless instances (notes: 5/min, votes: 30/min, comments: 10/min, DMs: 20/min per user).
 - **UUID validation** — All ID parameters are validated before database queries.
 - **Input sanitization** — Zod schemas validate all inputs. URLs and suspicious content are blocked.
-- **IP hashing** — IP addresses are hashed (never stored raw) for rate limiting.
+- **IP hashing** — IP addresses are hashed (never stored raw) for rate limiting and report deduplication.
 - **Soft delete** — Notes are never permanently deleted; they're hidden via `is_deleted` flag.
 
 ---
@@ -163,8 +194,8 @@ noted/
 │   ├── admin/                      # Admin dashboard (protected)
 │   │   ├── layout.tsx              # Admin guard + nav
 │   │   ├── page.tsx                # Overview + analytics
-│   │   ├── notes/page.tsx          # Note moderation
-│   │   ├── flagged/page.tsx        # Flagged content queue
+│   │   ├── notes/page.tsx          # Note moderation + featured control
+│   │   ├── flagged/page.tsx        # Report queue (approve/reject/delete)
 │   │   ├── users/page.tsx          # User/ban management
 │   │   └── map/page.tsx            # Admin map view
 │   └── api/
@@ -172,20 +203,23 @@ noted/
 │       ├── spotify-preview/route.ts # Spotify oEmbed proxy
 │       └── me/route.ts             # Debug: current user info
 ├── components/
-│   ├── note-map.tsx                # MapLibre map + markers
+│   ├── note-map.tsx                # MapLibre map + markers + realtime
 │   ├── compose-note.tsx            # Note creation modal
-│   ├── notes-panel.tsx             # Note detail panel
+│   ├── notes-panel.tsx             # Note detail panel + actions
 │   ├── note-card.tsx               # Individual note display
 │   ├── comments-section.tsx        # Comments UI
+│   ├── story-share.tsx             # Story card generator + export
+│   ├── report-flow.tsx             # Inline report form
 │   ├── place-search.tsx            # Location search input
 │   ├── featured-note.tsx           # Featured note badge
 │   └── time-slider.tsx             # Time filter slider
 ├── hooks/
 │   └── useGeolocation.ts           # GPS position hook
 ├── lib/
-│   ├── actions.ts                  # Note creation (server action)
+│   ├── actions.ts                  # Note creation + deletion (server action)
 │   ├── actions-comments.ts         # Comments (server action)
 │   ├── actions-dm.ts               # DMs (server action)
+│   ├── actions-report.ts           # User report submission (server action)
 │   ├── actions-vote.ts             # Voting (server action)
 │   ├── admin-actions.ts            # Admin operations (server action)
 │   ├── cluster.ts                  # Supercluster setup
@@ -201,7 +235,7 @@ noted/
 │       ├── browser.ts              # Browser Supabase client
 │       └── server.ts               # Service role client (server only)
 ├── supabase/
-│   └── migrations/                 # 6 SQL migrations
+│   └── migrations/                 # SQL migrations
 ├── middleware.ts                    # Clerk auth middleware
 ├── package.json
 ├── tsconfig.json
@@ -214,14 +248,15 @@ noted/
 
 | Table | Purpose |
 |-------|---------|
-| `notes` | Anonymous GPS-pinned notes (content, lat/lng, PostGIS geography, ip_hash, is_deleted) |
+| `notes` | Anonymous GPS-pinned notes (content, lat/lng, user_id, ip_hash, is_deleted) |
 | `comments` | Public comments on notes (requires auth) |
 | `dm_threads` | DM conversation threads tied to notes |
 | `dm_messages` | Messages within DM threads |
 | `profiles` | User display names (auto-created) |
 | `votes` | Upvote/downvote per IP hash per note |
-| `flagged_notes` | Admin moderation queue |
+| `flagged_notes` | Report/moderation queue (user reports + admin flags) |
 | `banned_users` | Banned user list |
+| `app_settings` | Key-value config (e.g. featured_note_id) |
 
 All tables have **Row Level Security** enabled. Public-facing tables use the anon key. Auth-gated operations use the service role key with server-side Clerk verification.
 

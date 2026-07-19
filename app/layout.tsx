@@ -1,22 +1,22 @@
 import type { Metadata } from "next";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const dmSans = DM_Sans({
+const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
-const dmSerif = DM_Serif_Display({
+const playfair = Playfair_Display({
   variable: "--font-serif",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -37,7 +37,7 @@ const clerkAppearance = {
     colorTextSecondary: "#aaaaaa",
     colorNeutral: "#ffffff",
     borderRadius: "10px",
-    fontFamily: `var(--font-sans, "DM Sans", system-ui, sans-serif)`,
+    fontFamily: `var(--font-sans, "Inter", system-ui, sans-serif)`,
   },
   elements: {
     card: {
@@ -47,7 +47,7 @@ const clerkAppearance = {
       boxShadow: "0 24px 80px rgba(0, 0, 0, .8)",
     },
     headerTitle: {
-      fontFamily: `var(--font-serif, "DM Serif Display", serif)`,
+      fontFamily: `var(--font-serif, "Playfair Display", serif)`,
       fontSize: "28px",
       fontWeight: "400",
       color: "#fff",
@@ -110,6 +110,7 @@ const clerkAppearance = {
       backgroundColor: "#0a0a0a",
       border: "1px solid #1a1a1a",
       borderRadius: "12px",
+      color: "#fff",
     },
     userButtonPopoverActionButton: {
       color: "#ccc",
@@ -120,6 +121,15 @@ const clerkAppearance = {
     },
     userButtonPopoverActionButtonText: {
       color: "#ccc",
+    },
+    userButtonPopoverActionButtonIcon: {
+      color: "#888",
+    },
+    userPreviewMainIdentifier: {
+      color: "#fff",
+    },
+    userPreviewSecondaryIdentifier: {
+      color: "#999",
     },
     userButtonPopoverFooter: {
       display: "none",
@@ -152,7 +162,7 @@ const clerkAppearance = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>
         <ClerkProvider appearance={clerkAppearance}>
           <Providers>{children}</Providers>

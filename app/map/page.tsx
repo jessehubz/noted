@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import { PlaceSearch } from "@/components/place-search";
 import { NotesPanel } from "@/components/notes-panel";
 import { ComposeNote } from "@/components/compose-note";
 import { FeaturedNote } from "@/components/featured-note";
 import { TimeSlider } from "@/components/time-slider";
+import { NotificationBell } from "@/components/notification-bell";
 import type { Note, PlaceResult } from "@/lib/types";
 
 const NoteMap = dynamic(
@@ -17,6 +18,8 @@ const NoteMap = dynamic(
 );
 
 export default function MapPage() {
+  const { user } = useUser();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [selectedNotes, setSelectedNotes] = useState<Note[] | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -26,6 +29,12 @@ export default function MapPage() {
     longitude: number;
   } | null>(null);
   const [since, setSince] = useState<string | null>(null);
+
+  // Check admin status
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    fetch("/api/me").then((r) => r.json()).then((d) => setIsAdmin(d.isAdmin === true)).catch(() => { });
+  }, [user]);
 
   useEffect(() => {
     if (!("geolocation" in navigator)) return;
@@ -63,24 +72,26 @@ export default function MapPage() {
       {/* Top bar */}
       <div className="map-topbar">
         <Link href="/" className="map-wordmark" aria-label="Go to home">noted</Link>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="map-topbar-right">
           <div className="map-search">
             <PlaceSearch onSelect={setFlyToPlace} />
           </div>
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <button style={{ background: "none", border: "1px solid #222", borderRadius: "9999px", padding: "7px 16px", color: "#999", fontSize: 12, fontWeight: 600, cursor: "pointer", pointerEvents: "auto", fontFamily: "inherit" }}>Sign in</button>
+              <button className="map-signin-btn">Sign in</button>
             </SignInButton>
           </Show>
           <Show when="signed-in">
-            <div style={{ pointerEvents: "auto" }}>
+            <div className="map-user-group">
+              {isAdmin && <Link href="/admin" className="map-admin-btn">Admin</Link>}
+              <NotificationBell />
               <UserButton />
             </div>
           </Show>
         </div>
       </div>
 
-      {/* Featured note badge */}
+      {/* Featured note */}
       <FeaturedNote onSelect={handleFeaturedSelect} />
 
       {/* Time slider */}
@@ -96,7 +107,11 @@ export default function MapPage() {
         </button>
       </div>
 
-      <NotesPanel notes={selectedNotes} onClose={() => setSelectedNotes(null)} />
+      <NotesPanel
+        notes={selectedNotes}
+        onClose={() => setSelectedNotes(null)}
+        onNoteDeleted={() => setRefreshToken((t) => t + 1)}
+      />
 
       <ComposeNote
         open={composeOpen}

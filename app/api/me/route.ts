@@ -1,19 +1,17 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-/** Debug endpoint: returns the current user's email as Clerk sees it.
- *  Access at /api/me when signed in to verify your admin email. */
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "jdfrancisco5@up.edu.ph")
+  .split(",")
+  .map((e) => e.trim().toLowerCase());
+
 export async function GET() {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  if (!userId) return NextResponse.json({ userId: null, isAdmin: false });
 
   const user = await currentUser();
-  const emails = user?.emailAddresses?.map((e) => e.emailAddress) ?? [];
+  const emails = user?.emailAddresses?.map((e) => e.emailAddress?.toLowerCase()) ?? [];
+  const isAdmin = emails.some((email) => email && ADMIN_EMAILS.includes(email));
 
-  return NextResponse.json({
-    userId,
-    emails,
-    primaryEmail: emails[0] ?? null,
-    adminEmails: (process.env.ADMIN_EMAILS ?? "jdfrancisco5@up.edu.ph").split(",").map((e) => e.trim()),
-  });
+  return NextResponse.json({ userId, isAdmin });
 }

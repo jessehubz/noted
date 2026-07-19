@@ -27,7 +27,7 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
   const [content, setContent] = useState("");
   const [name, setName] = useState("");
-  const [fuzzy, setFuzzy] = useState(false);
+  const [fuzzy, setFuzzy] = useState(true);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -108,58 +108,66 @@ function ComposeDialog({ onClose, onPosted }: Omit<ComposeNoteProps, "open">) {
 
           {(step === "writing" || step === "posting") && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-              <div className="compose-header">
-                <span className="compose-loc-badge">
+              {/* Top row: location toggle + char count */}
+              <div className="compose-top">
+                <div className="compose-loc-indicator">
                   <span className="compose-loc-dot" />
-                  {fuzzy ? "Nearby location" : "Exact location"}
-                </span>
-                <button className="compose-close" onClick={onClose} disabled={step === "posting"} aria-label="Close">✕</button>
+                  <span>{fuzzy ? "Nearby" : "Exact spot"}</span>
+                </div>
+                <span className={`compose-char-count${remaining < 20 ? " warn" : ""}`}>{remaining}</span>
               </div>
 
+              {/* Textarea */}
               <textarea
                 autoFocus
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, MAX_NOTE_LENGTH))}
                 disabled={step === "posting"}
-                placeholder="What's on your mind?"
+                placeholder="Say what you couldn't."
                 rows={5}
                 className="compose-textarea"
               />
 
-              <div className="compose-meta">
-                <span>anonymous · permanent</span>
-                <span className={remaining < 20 ? "compose-meta-warn" : ""}>{remaining}</span>
+              {/* Location precision toggle — clear switch */}
+              <div className="compose-location-row">
+                <div className="compose-location-info">
+                  <span className="compose-location-title">Hide exact location</span>
+                  <span className="compose-location-desc">Pin placed randomly within ~200m</span>
+                </div>
+                <button
+                  type="button"
+                  className={`compose-switch ${fuzzy ? "on" : ""}`}
+                  onClick={() => setFuzzy(!fuzzy)}
+                  disabled={step === "posting"}
+                  aria-label={fuzzy ? "Using nearby location" : "Using exact location"}
+                >
+                  <span className="compose-switch-thumb" />
+                </button>
               </div>
 
+              {/* Bottom labels */}
+              <div className="compose-labels">
+                <span>anonymous</span>
+                <span>stays forever</span>
+              </div>
+
+              {/* Optional display name */}
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value.slice(0, 40))}
                 disabled={step === "posting"}
-                placeholder="Display name (optional)"
-                className="compose-input"
+                placeholder="Sign your note (optional)"
+                className="compose-name-input"
               />
-
-              {/* Location precision toggle */}
-              <label className="compose-toggle">
-                <input
-                  type="checkbox"
-                  checked={fuzzy}
-                  onChange={(e) => setFuzzy(e.target.checked)}
-                  disabled={step === "posting"}
-                />
-                <span className="compose-toggle-label">
-                  Hide exact location
-                  <span className="compose-toggle-hint">Pin will be placed randomly within ~200m</span>
-                </span>
-              </label>
 
               {submitError && <p className="compose-error-text">{submitError}</p>}
 
+              {/* Submit button */}
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit || step === "posting"}
-                className="compose-btn-primary compose-submit"
+                className="compose-pin-btn"
               >
                 {step === "posting"
                   ? <><span className="compose-spinner compose-spinner--sm" /> Pinning…</>

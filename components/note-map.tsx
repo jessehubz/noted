@@ -27,6 +27,9 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
   const pendingFlyRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const [ready, setReady] = useState(false);
 
+  // Track the last zoom level used to render so we use consistent flooring
+  const lastZoomRef = useRef<number>(DEFAULT_ZOOM);
+
   // ── Stable render: reconcile existing markers instead of destroy-recreate ──
   const render = useCallback(() => {
     const map = mapRef.current;
@@ -38,7 +41,11 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
       bounds.getWest(), bounds.getSouth(),
       bounds.getEast(), bounds.getNorth(),
     ];
-    const zoom = Math.round(map.getZoom());
+    // Use Math.floor for consistent clustering in both zoom directions.
+    // Math.round caused asymmetric threshold changes (zooming in vs out crossed
+    // different integer boundaries at different points).
+    const zoom = Math.floor(map.getZoom());
+    lastZoomRef.current = zoom;
     const features = index.getClusters(bbox, zoom) as NoteClusterFeature[];
 
     // Build the set of keys that should be visible this frame.
@@ -81,8 +88,10 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
         el.innerHTML = pinSVG;
         el.style.cssText = `
           background: none; border: none; padding: 0; cursor: pointer;
-          width: 36px; height: 42px; display: block; touch-action: none;
-          min-width: 36px; min-height: 42px;
+          width: 30px; height: 40px; display: block; touch-action: none;
+          min-width: 30px; min-height: 40px;
+          filter: drop-shadow(0 8px 24px rgba(0,0,0,0.65));
+          transition: transform 0.25s cubic-bezier(.22,1,.36,1);
         `;
         // When clicking a single pin, also grab any other notes at the exact same coordinate
         const noteLng = lng;
@@ -113,9 +122,16 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
     }
 
     // Remove markers that are no longer in view / in the cluster result.
+    // Fade out markers instead of abrupt removal for smooth zoom transitions.
     for (const [key, marker] of markerMapRef.current) {
       if (!nextKeys.has(key)) {
-        marker.remove();
+        const el = marker.getElement();
+        el.style.opacity = "0";
+        el.style.pointerEvents = "none";
+        // Remove after transition completes
+        setTimeout(() => {
+          marker.remove();
+        }, 200);
         markerMapRef.current.delete(key);
       }
     }
@@ -163,6 +179,21 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
     };
   }, []);
 
+  // ── Re-render on zoom (without refetching) for smooth clustering transitions ──
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+    const map = mapRef.current;
+    // Render on every zoom change so clusters update smoothly in both directions
+    const onZoom = () => {
+      const newZoom = Math.floor(map.getZoom());
+      if (newZoom !== lastZoomRef.current) {
+        render();
+      }
+    };
+    map.on("zoom", onZoom);
+    return () => { map.off("zoom", onZoom); };
+  }, [ready, render]);
+
   // ── Refetch on map move ───────────────────────────────────────────────────
   useEffect(() => {
     if (!ready || !mapRef.current) return;
@@ -178,7 +209,7 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
     refetch();
   }, [refreshToken, ready, refetch]);
 
-  // ── Realtime: new notes from other users appear immediately ───────────────
+  // ── Realtime: new notes appear + deleted notes disappear immediately ────────
   useEffect(() => {
     if (!ready) return;
 
@@ -189,10 +220,26 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
         { event: "INSERT", schema: "public", table: "notes" },
         (payload) => {
           const note = payload.new as Note;
-          // Only add if not already present.
+          // Only add if not already present and not deleted.
+          if (note.is_deleted) return;
           if (notesRef.current.some((n) => n.id === note.id)) return;
           notesRef.current = [note, ...notesRef.current];
           render();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "notes" },
+        (payload) => {
+          const updated = payload.new as Note;
+          // If note was soft-deleted, remove it from the map in real time
+          if (updated.is_deleted) {
+            const before = notesRef.current.length;
+            notesRef.current = notesRef.current.filter((n) => n.id !== updated.id);
+            if (notesRef.current.length !== before) {
+              render();
+            }
+          }
         },
       )
       .subscribe();
@@ -247,27 +294,35 @@ export function NoteMap({ onSelectNotes, refreshToken, flyToPlace, flyToCoords, 
 
 function clusterSize(count: number): number {
   if (count < 10) return 36;
-  if (count < 50) return 44;
-  if (count < 200) return 52;
-  return 60;
+  if (count < 50) return 46;
+  if (count < 200) return 62;
+  return 62;
 }
 
 function clusterStyle(size: number): string {
+  // Matches design-preview.html: circular white badge with concentric ring borders
+  const ring1 = size + 16;
+  const ring2 = size + 36;
   return `
     width:${size}px;height:${size}px;border-radius:50%;
-    background:#fff;color:#000;
-    font-size:12px;font-weight:700;letter-spacing:-0.02em;
+    background:#F5F3EE;color:#060606;
+    font-family:"Space Mono",ui-monospace,monospace;
+    font-size:${size > 50 ? 17 : size > 40 ? 14 : 12}px;font-weight:400;
     display:flex;align-items:center;justify-content:center;
     cursor:pointer;border:none;padding:0;
-    box-shadow:0 2px 12px rgba(0,0,0,0.4);
+    box-shadow:0 10px 34px rgba(0,0,0,0.6),
+      0 0 0 8px rgba(245,243,238,0.14),
+      0 0 0 18px rgba(245,243,238,0.07);
     touch-action:none;
+    transition:transform 0.25s cubic-bezier(.22,1,.36,1);
   `;
 }
 
-// Minimal square-cornered pin: white fill, black outline, notch at bottom.
+// Pin matching design-preview.html: rounded square head + triangle tail + center dot + halo
 const pinSVG = `
-<svg width="36" height="42" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="1" y="1" width="30" height="28" rx="5" fill="#fff" stroke="#000" stroke-width="1.5"/>
-  <path d="M16 38 L11 29 H21 Z" fill="#fff" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>
-  <circle cx="16" cy="15" r="3.5" fill="#000"/>
+<svg width="30" height="40" viewBox="0 0 30 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="30" height="30" rx="11" fill="#F5F3EE"/>
+  <path d="M15 40 L10 30 H20 Z" fill="#F5F3EE"/>
+  <circle cx="15" cy="15" r="3" fill="#060606"/>
 </svg>`;
+

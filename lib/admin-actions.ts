@@ -215,6 +215,22 @@ export async function resolveFlagApprove(noteId: string): Promise<{ success: boo
   return { success: true };
 }
 
+/**
+ * Reject a report — dismiss it without taking action on the note.
+ * The note stays live and the flag is marked as rejected.
+ */
+export async function rejectReport(flagId: string): Promise<{ success: boolean }> {
+  await requireAdmin();
+
+  await supabaseAdmin
+    .from("flagged_notes")
+    .update({ status: "rejected", resolved_at: new Date().toISOString() })
+    .eq("id", flagId)
+    .eq("status", "pending");
+
+  return { success: true };
+}
+
 // ─── User / Ban Management ───────────────────────────────────────
 
 export interface BannedUser {
@@ -281,4 +297,67 @@ export async function getRecentCommenters(): Promise<{ user_id: string; comment_
   return Array.from(counts, ([user_id, comment_count]) => ({ user_id, comment_count }))
     .sort((a, b) => b.comment_count - a.comment_count)
     .slice(0, 50);
+}
+
+// ─── Featured Note Control ───────────────────────────────────────
+
+/**
+ * Get the currently forced featured note ID (if any).
+ */
+export async function getFeaturedNoteId(): Promise<string | null> {
+  await requireAdmin();
+
+  const { data } = await supabaseAdmin
+    .from("app_settings")
+    .select("value")
+    .eq("key", "featured_note_id")
+    .single();
+
+  return data?.value ?? null;
+}
+
+/**
+ * Manually set a specific note as the featured note.
+ */
+export async function setFeaturedNote(noteId: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+
+  // Verify the note exists and is not deleted
+  const { data: note } = await supabaseAdmin
+    .from("notes")
+    .select("id")
+    .eq("id", noteId)
+    .eq("is_deleted", false)
+    .single();
+
+  if (!note) {
+    return { success: false, error: "Note not found or is deleted." };
+  }
+
+  const { error } = await supabaseAdmin
+    .from("app_settings")
+    .upsert(
+      { key: "featured_note_id", value: noteId },
+      { onConflict: "key" }
+    );
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+/**
+ * Clear the forced featured note, falling back to random selection.
+ */
+export async function clearFeaturedNote(): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+
+  const { error } = await supabaseAdmin
+    .from("app_settings")
+    .upsert(
+      { key: "featured_note_id", value: null },
+      { onConflict: "key" }
+    );
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
 }

@@ -8,6 +8,8 @@ export interface Note {
   display_name: string | null;
   score: number;
   created_at: string;
+  user_id: string | null;
+  is_deleted?: boolean;
 }
 
 /** Payload the client sends when creating a note. */
